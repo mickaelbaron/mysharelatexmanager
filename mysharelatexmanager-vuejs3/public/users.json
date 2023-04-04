@@ -1,0 +1,92 @@
+{
+    "data": [
+        {
+            "id": "555f6aba1efeb68700633350",
+            "institution": "",
+            "email": "baron.mickael@gmail.com",
+            "hashedPassword": null,
+            "loginCount": 2830,
+            "lastLoggedIn": 1671532422782,
+            "last_name": "",
+            "first_name": "baron",
+            "isAdmin": true
+        },
+        {
+            "id": "5571aed9183c9632000f3a20",
+            "institution": "",
+            "email": "paris.martin@lambert.fr",
+            "hashedPassword": null,
+            "loginCount": 8,
+            "lastLoggedIn": 1666629744453,
+            "last_name": "Dupuy",
+            "first_name": "Alix",
+            "isAdmin": false
+        },
+        {
+            "id": "5571c008183c9632000f3a20",
+            "institution": "",
+            "email": "victor24@blanchard.fr",
+            "hashedPassword": null,
+            "loginCount": 10,
+            "lastLoggedIn": 1475051183220,
+            "last_name": "Coquillage",
+            "first_name": "Camille",
+            "isAdmin": false
+        },
+        {
+            "id": "5571c738183c9632000f3a40",
+            "institution": "",
+            "email": "dfoucher@ollivier.fr",
+            "hashedPassword": null,
+            "loginCount": 320,
+            "lastLoggedIn": 1513592765103,
+            "last_name": "Foucher",
+            "first_name": "David",
+            "isAdmin": false
+        },
+        {
+            "id": "5571cda5183c9632000f3a40",
+            "institution": "",
+            "email": "zmathieu@gmail.com ",
+            "hashedPassword": null,
+            "loginCount": 72,
+            "lastLoggedIn": 1666948539236,
+            "last_name": "Degois",
+            "first_name": "Alexis",
+            "isAdmin": false
+        },
+        {
+            "id": "55769de6183c9632000f3a40",
+            "institution": "",
+            "email": "margaux15@delannoy.fr",
+            "hashedPassword": null,
+            "loginCount": 19,
+            "lastLoggedIn": 1669469940682,
+            "last_name": "Ferreira",
+            "first_name": "Thibault",
+            "isAdmin": false
+        },
+        {
+            "id": "5591697ff89a8b3200ae99e0",
+            "institution": "",
+            "email": "ggarcia@live.com",
+            "hashedPassword": null,
+            "loginCount": 46,
+            "lastLoggedIn": 1590134875342,
+            "last_name": "Meyer",
+            "first_name": "Armand",
+            "isAdmin": false
+        },
+        {
+            "id": "55916996f89a8b3200ae99f0",
+            "institution": "",
+            "email": "bonnin.georges@wanadoo.fr",
+            "hashedPassword": null,
+            "loginCount": 3,
+            "lastLoggedIn": 1455041280324,
+            "last_name": "Georges",
+            "first_name": "Bonnin",
+            "isAdmin": false
+        }
+    ]
+}

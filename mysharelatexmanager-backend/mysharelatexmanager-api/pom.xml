@@ -1,0 +1,28 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>mysharelatexmanager-api</artifactId>
+	<name>mysharelatexmanager-api</name>
+
+	<parent>
+		<groupId>fr.mickaelbaron</groupId>
+		<artifactId>mysharelatexmanager-backend</artifactId>
+		<version>0.2-SNAPSHOT</version>
+	</parent>
+
+	<dependencies>
+		<dependency>
+			<groupId>jakarta.ws.rs</groupId>
+			<artifactId>jakarta.ws.rs-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.kumuluz.ee.logs</groupId>
+			<artifactId>kumuluzee-logs-log4j2</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+		</dependency>
+	</dependencies>
+</project>

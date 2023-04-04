@@ -1,0 +1,44 @@
+services:
+
+  msm-backend:
+    build: mysharelatexmanager-backend/
+    image: mysharelatexmanager/server
+    external_links:
+      - sharelatex-mongo
+    environment: 
+      KUMULUZEE_SERVER_HTTP_PORT: 9991
+      mysharelatexmanager.mongodb.url: mongodb://sharelatex-mongodb:27017
+      mysharelatexmanager.server.base: http://0.0.0.0/
+    networks:
+      - mysharelatexmanagernetwork
+      - sharelatexnetwork
+
+  msm-frontend:
+    build: 
+      context: ./mysharelatexmanager-vuejs3/
+      args:
+        script_name: build
+    image: mysharelatexmanager/vuejs3
+    networks:
+      - mysharelatexmanagernetwork
+
+  msm-rp:
+    build: 
+      context: ./mysharelatexmanager-rp/
+      args:
+        script_name: build
+    image: mysharelatexmanager/rp
+    depends_on:
+      - msm-frontend
+      - msm-backend
+    ports:
+      - "80:80"
+    networks:
+      - mysharelatexmanagernetwork
+
+networks:
+  mysharelatexmanagernetwork:
+    name: mysharelatexmanagernetwork
+  sharelatexnetwork:
+    name: sharelatexnetwork
+    external: true

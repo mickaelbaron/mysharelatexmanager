@@ -1,0 +1,104 @@
+{
+    "total": 1254,
+    "data": [
+        {
+            "id": "5773cf74b9dcfa4500eece10",
+            "owner": "baron.mickael@gmail.com",
+            "name": "Meeting 30/02/2023",
+            "description": "",
+            "collaberators": [],
+            "lastUpdated": 1467207540249,
+            "owner_ref": "5773b463cd331547004f8b61",
+            "active": true
+        },
+        {
+            "id": "5a6ee9e33e5dc24b00c5f550",
+            "owner": "baron.mickael@gmail.com",
+            "name": "Article VLDB 2018",
+            "description": "",
+            "collaberators": [],
+            "lastUpdated": 1517321420749,
+            "owner_ref": "555f6aba1efeb68700633350",
+            "active": true
+        },
+        {
+            "id": "5a94547d3e5dc24b00c5f5f0",
+            "owner": "baron.mickael@gmail.com",
+            "name": "Abstract CIKM 2018",
+            "description": "",
+            "collaberators": [
+                {
+                    "id": "5571aed9183c9632000f3a2b",
+                    "email": "paris.martin@lambert.fr"
+                },
+                {
+                    "id": "56621882fbdd642e0083a3d0",
+                    "email": "victor24@blanchard.fr"
+                },
+                {
+                    "id": "5a9454aa3e5dc24b00c5f5ff",
+                    "email": "dfoucher@ollivier.fr"
+                }
+            ],
+            "lastUpdated": 1519979898102,
+            "owner_ref": "555f6aba1efeb68700633350",
+            "active": true
+        },
+        {
+            "id": "5c583901b2049a0070c1f640",
+            "owner": "baron.mickael@gmail.com",
+            "name": "Recipes Beef Bourguignon",
+            "description": "",
+            "collaberators": [
+                {
+                    "id": "5571aed9183c9632000f3a2b",
+                    "email": "paris.martin@lambert.fr"
+                },
+                {
+                    "id": "5c583933b2049a0070c1f647",
+                    "email": "victor24@blanchard.fr"
+                }
+            ],
+            "lastUpdated": 1549360435928,
+            "owner_ref": "555f6aba1efeb68700633350",
+            "active": true
+        },
+        {
+            "id": "5d08d3cd0a38b2007ca69c50",
+            "owner": "baron.mickael@gmail.com",
+            "name": "how to earn money",
+            "description": "",
+            "collaberators": [],
+            "lastUpdated": 1570105724263,
+            "owner_ref": "555f6aba1efeb68700633350",
+            "active": true
+        },
+        {
+            "id": "5d76022993ee4300808a0e80",
+            "owner": "baron.mickael@gmail.com",
+            "name": "PVMeeting MyCompany",
+            "description": "",
+            "collaberators": [
+                {
+                    "id": "5571aed9183c9632000f3a2b",
+                    "email": "paris.martin@lambert.fr"
+                },
+                {
+                    "id": "56621882fbdd642e0083a3d0",
+                    "email": "victor24@blanchard.fr"
+                },
+                {
+                    "id": "5d24863a0a38b2007ca69e1c",
+                    "email": "bonnin.georges@wanadoo.fr"
+                },
+                {
+                    "id": "5d2486580a38b2007ca69e22",
+                    "email": "ggarcia@live.com"
+                }
+            ],
+            "lastUpdated": 1572251845165,
+            "owner_ref": "555f6aba1efeb68700633350",
+            "active": true
+        }
+    ]
+}
