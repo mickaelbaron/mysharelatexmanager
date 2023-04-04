@@ -105,13 +105,13 @@ NODE_ENV = production
 * To build without subpath: <https://localhost>, execute this command line:
 
 ```console
-$ docker-compose build --build-arg script_name=build
+$ docker compose build --build-arg script_name=build
 ```
 
 * To build with subpath: <http://localhost/YOUR_SUBPATH>, execute this command line:
 
 ```console
-$ docker-compose build  --build-arg script_name=subpath
+$ docker compose build  --build-arg script_name=subpath
 ```
 
 * To check if the images are been built, execute this command line:
@@ -153,7 +153,7 @@ $ docker network create mysharelatexmanagernetwork
 * From the root of the project, execute this command line:
 
 ```console
-$ docker-compose up -d
+$ docker compose up -d
 ```
 
 * Open the <http://localhost> (without subpath) or <http://localhost/YOUR_SUBPATH> (with a subpath) URL with your favorite web browser.
