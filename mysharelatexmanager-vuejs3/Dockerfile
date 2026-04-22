@@ -1,10 +1,11 @@
 # Build env
-FROM node:lts-alpine as build-npm-stage
+FROM node:lts-alpine AS builder
 LABEL maintainer="Mickael BARON (baron.mickael@gmail.com)"
 
 ARG script_name=build
 
-WORKDIR /mysharelatexmanager-vuejs
+WORKDIR /app
+
 COPY package*.json ./
 RUN npm install
 COPY public ./public
@@ -18,7 +19,7 @@ RUN npm run $script_name
 
 # Run env
 FROM nginx:stable-alpine
-COPY --from=build-npm-stage /mysharelatexmanager-vuejs/dist /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
