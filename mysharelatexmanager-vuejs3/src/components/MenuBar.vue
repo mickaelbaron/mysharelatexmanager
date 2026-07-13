@@ -1,15 +1,30 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-defineEmits(['AboutPopup', 'LogOut', 'FilterContent', 'Test'])
+import { useRoute } from 'vue-router'
+const emit = defineEmits({
+  AboutPopup: null,
+  LogOut: null,
+  FilterContent: (value) => typeof value === 'string',
+})
 
-const router = useRouter()
 const route = useRoute()
 const filterContent = ref('')
 
-function changeRoute(value) {
-  filterContent.value = ''
-  router.push({ name: value })
+const navigation = [
+  { name: 'UsersEditor', label: 'Users' },
+  { name: 'ProjectsEditor', label: 'Projects' },
+]
+
+function search() {
+  emit('FilterContent', filterContent.value)
+}
+
+function showAbout() {
+  emit('AboutPopup')
+}
+
+function logout() {
+  emit('LogOut')
 }
 </script>
 
@@ -31,38 +46,19 @@ function changeRoute(value) {
         </button>
         <div id="navbarCollapse" class="collapse navbar-collapse">
           <ul class="navbar-nav me-auto mb-2 mb-md-0">
-            <li class="nav-item">
-              <a
-                class="nav-link"
-                :class="{ active: route.name === 'UsersEditor' }"
-                href="#"
-                @click="changeRoute('UsersEditor')"
-                >Users</a
-              >
+            <li v-for="item in navigation" :key="item.name" class="nav-item">
+              <RouterLink :to="{ name: item.name }" class="nav-link" active-class="active">
+                {{ item.label }}
+              </RouterLink>
             </li>
             <li class="nav-item">
-              <a
-                class="nav-link"
-                :class="{ active: route.name === 'ProjectsEditor' }"
-                href="#"
-                @click="changeRoute('ProjectsEditor')"
-                >Projects</a
-              >
+              <button class="nav-link btn btn-link" type="button" @click="showAbout">About</button>
             </li>
             <li class="nav-item">
-              <a href="#" class="nav-link" @click="$emit('AboutPopup')"
-                >About</a
-              >
-            </li>
-            <li class="nav-item">
-              <a href="#" class="nav-link" @click="$emit('LogOut')">Logout</a>
+              <button class="nav-link btn btn-link" type="button" @click="logout">Logout</button>
             </li>
           </ul>
-          <form
-            class="d-flex"
-            role="search"
-            @submit.prevent="$emit('FilterContent', filterContent)"
-          >
+          <form class="d-flex" role="search" @submit.prevent="search">
             <input
               v-model="filterContent"
               class="form-control me-2"
@@ -70,9 +66,7 @@ function changeRoute(value) {
               placeholder="Search"
               aria-label="Search"
             />
-            <button class="btn btn-outline-success" type="submit">
-              Search
-            </button>
+            <button class="btn btn-outline-success" type="submit">Search</button>
           </form>
         </div>
       </div>

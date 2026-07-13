@@ -5,24 +5,23 @@ import static fr.mickaelbaron.mysharelatexmanager.MySharelatexManagerTestConstan
 import static fr.mickaelbaron.mysharelatexmanager.MySharelatexManagerTestConstant.SUPER_CONF;
 import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.DESCRIPTION;
 import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.NAME;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
-import org.jglue.cdiunit.CdiRunner;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import fr.mickaelbaron.mysharelatexmanager.MySharelatexManagerConstant;
 import fr.mickaelbaron.mysharelatexmanager.dao.IProjectDAO;
@@ -32,218 +31,270 @@ import fr.mickaelbaron.mysharelatexmanager.entity.EntityFactory;
 import fr.mickaelbaron.mysharelatexmanager.entity.ProjectEntity;
 import fr.mickaelbaron.mysharelatexmanager.model.Project;
 import fr.mickaelbaron.mysharelatexmanager.model.ProjectResult;
+import jakarta.enterprise.inject.Produces;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
-/**
- * @author Mickael BARON (baron.mickael@gmail.com)
- */
-@RunWith(CdiRunner.class)
-public class ProjectResourceImplTest extends AbstractResourceTest {
+@ExtendWith(MockitoExtension.class)
+public class ProjectResourceImplTest extends AbstractServiceTest {
 
-	@Inject
-	private ProjectResourceImpl currentResource;
+    @InjectMocks
+    private ProjectResourceImpl currentResource;
 
-	@Produces
-	@Mock
-	IProjectDAO projectDAO;
+    @Produces
+    @Mock
+    IProjectDAO projectDAO;
 
-	@Produces
-	@Mock
-	IUserDAO userDAO;
+    @Produces
+    @Mock
+    IUserDAO userDAO;
 
-	@Test
-	public void updateProjectWithoutParameterTest() {
-		// Given
+    @Test
+    public void updateProject_missingParameter() {
+        // When
+        WebApplicationException exception = assertThrows(
+                WebApplicationException.class,
+                () -> currentResource.updateProject(null));
 
-		// When and Then
-		try {
-			currentResource.updateProject(null);
-			Assert.fail("Must throw a WebApplicationException");
-		} catch (WebApplicationException e) {
-			// Then
-			Assert.assertEquals("Parameter is missing.", e.getMessage());
-			Assert.assertEquals(Status.BAD_REQUEST, e.getResponse().getStatusInfo());
-		}
-	}
+        // Then
+        assertEquals("Parameter is missing.", exception.getMessage());
+        assertEquals(Status.BAD_REQUEST, exception.getResponse().getStatusInfo());
+    }
 
-	@Test
-	public void updateProjectWithUnmodifiedProjectTest() {
-		// Given
-		Mockito.when(projectDAO.updateProject(any(ProjectEntity.class))).thenReturn(false);
-		final ProjectEntity project = createAscProjects().get(0);
-		Mockito.when(projectDAO.getProjectById(project.getId())).thenReturn(Optional.of(project));
+    @Test
+    void updateProject_withoutUpdatedProject() {
+        // Given
+        when(projectDAO.updateProject(any(ProjectEntity.class))).thenReturn(false);
+        final ProjectEntity project = createAscProjects().get(0);
 
-		// When 
-		Response updateProject = currentResource.updateProject(EntityFactory.createProject(project));
+        when(projectDAO.getProjectById(project.getId()))
+                .thenReturn(Optional.of(project));
 
-		// Then
-		Assert.assertEquals(204, updateProject.getStatus());
-	}
+        // When
+        Response updateProject = currentResource.updateProject(
+                EntityFactory.createProject(project));
 
-	@Test
-	public void updateProjectWithNotFoundProjectTest() {
-		// Given
-		Mockito.when(projectDAO.getProjectById(any(String.class))).thenReturn(Optional.empty());
+        // Then
+        assertEquals(204, updateProject.getStatus());
+    }
 
-		// When and Then
-		try {
-			currentResource.updateProject(new Project());
-			Assert.fail("Must throw a WebApplicationException");
-		} catch (WebApplicationException e) {
-			// Then
-			Assert.assertEquals(MySharelatexManagerConstant.PROJECT_NOT_FOUND_MSG, e.getMessage());
-			Assert.assertEquals(Status.NOT_FOUND, e.getResponse().getStatusInfo());
-		}
-	}
+    @Test
+    public void updateProject_withNullProjectID() {
+        // Given
+        when(projectDAO.getProjectById(nullable(String.class))).thenReturn(Optional.empty());
 
-	@Test
-	public void updateProjectTest() {
-		// Given
-		Mockito.when(projectDAO.updateProject(any(ProjectEntity.class))).thenReturn(true);
-		final ProjectEntity project = createAscProjects().get(0);
-		Mockito.when(projectDAO.getProjectById(project.getId())).thenReturn(Optional.of(project));
+        // When
+        WebApplicationException exception = assertThrows(
+                WebApplicationException.class,
+                () -> currentResource.updateProject(new Project()));
 
-		// When
-		final Response updateProject = currentResource.updateProject(EntityFactory.createProject(project));
+        // Then
+        assertEquals(
+                MySharelatexManagerConstant.PROJECT_NOT_FOUND_MSG,
+                exception.getMessage());
+        assertEquals(
+                Status.NOT_FOUND,
+                exception.getResponse().getStatusInfo());
+    }
 
-		// Then
-		Assert.assertEquals(200, updateProject.getStatus());
-	}
+    @Test
+    public void updateProject_success() {
+        // Given
+        when(projectDAO.updateProject(any(ProjectEntity.class))).thenReturn(true);
 
-	@Test
-	public void getAllProjectsTest() {
-		// Given
-		Mockito.when(projectDAO.getAllProjects(new ArrayList<SortedData>(), "")).thenReturn(createAscProjects());
+        final ProjectEntity project = createAscProjects().get(0);
+        when(projectDAO.getProjectById(project.getId()))
+                .thenReturn(Optional.of(project));
 
-		// When
-		final ProjectResult allProjects = currentResource.getAllProjects("", "");
+        // When
+        Response response = currentResource.updateProject(
+                EntityFactory.createProject(project));
 
-		// Then
-		Assert.assertNotNull(allProjects);
-		Assert.assertEquals((Integer) 2, allProjects.getTotal());
-		Assert.assertEquals(CHI2050, allProjects.getData().get(0).getName());
-		Assert.assertEquals(SUPER_CONF, allProjects.getData().get(1).getName());
-	}
+        // Then
+        assertEquals(200, response.getStatus());
+    }
 
-	@Test
-	public void getAllProjectsWithAscSorterTest() {
-		// Given
-		List<SortedData> sortedData = new ArrayList<SortedData>();
-		sortedData.add(new SortedData(NAME, true));
+    @Test
+    public void getAllProjects_success() {
+        // Given
+        Mockito.when(projectDAO.getAllProjects(new ArrayList<SortedData>(), "")).thenReturn(createAscProjects());
 
-		Mockito.when(projectDAO.getAllProjects(sortedData, "")).thenReturn(createAscProjects());
+        // When
+        final ProjectResult allProjects = currentResource.getAllProjects("", "");
 
-		// When
-		String sorted = NAME + "|asc";
-		final ProjectResult allProjects = currentResource.getAllProjects(sorted, "");
+        // Then
+        assertNotNull(allProjects);
+        assertEquals((Integer) 2, allProjects.getTotal());
+        assertEquals(CHI2050, allProjects.getData().get(0).getName());
+        assertEquals(SUPER_CONF, allProjects.getData().get(1).getName());
+    }
 
-		// Then
-		Assert.assertNotNull(allProjects);
-		Assert.assertEquals((Integer) 2, allProjects.getTotal());
-		Assert.assertEquals(CHI2050, allProjects.getData().get(0).getName());
-		Assert.assertEquals(SUPER_CONF, allProjects.getData().get(1).getName());
-	}
+    @Test
+    public void getAllProjects_withAscSorter() {
+        // Given
+        List<SortedData> sortedData = new ArrayList<SortedData>();
+        sortedData.add(new SortedData(NAME, true));
 
-	@Test
-	public void getAllProjectsWithMultipleAscSorterTest() {
-		// Given
-		List<SortedData> sortedData = new ArrayList<SortedData>();
-		sortedData.add(new SortedData(DESCRIPTION, true));
-		sortedData.add(new SortedData(NAME, true));
+        Mockito.when(projectDAO.getAllProjects(sortedData, "")).thenReturn(createAscProjects());
+        String sorted = NAME + "|asc";
 
-		Mockito.when(projectDAO.getAllProjects(sortedData, "")).thenReturn(createAscProjects());
+        // When
+        final ProjectResult allProjects = currentResource.getAllProjects(sorted, "");
 
-		// When
-		String sorted = DESCRIPTION + "|asc," + NAME + "|asc";
-		final ProjectResult allUsers = currentResource.getAllProjects(sorted, "");
+        // Then
+        assertNotNull(allProjects);
+        assertEquals((Integer) 2, allProjects.getTotal());
+        assertEquals(CHI2050, allProjects.getData().get(0).getName());
+        assertEquals(SUPER_CONF, allProjects.getData().get(1).getName());
+    }
 
-		// Then
-		Assert.assertNotNull(allUsers);
-		Assert.assertEquals((Integer) 2, allUsers.getTotal());
-		Assert.assertEquals(CHI2050, allUsers.getData().get(0).getName());
-		Assert.assertEquals(SUPER_CONF, allUsers.getData().get(1).getName());
-	}
+    @Test
+    public void getAllProjects_withMultipleAscSorter() {
+        // Given
+        List<SortedData> sortedData = new ArrayList<SortedData>();
+        sortedData.add(new SortedData(DESCRIPTION, true));
+        sortedData.add(new SortedData(NAME, true));
 
-	@Test
-	public void getAllProjectsWithDescSorterTest() {
-		// Given
-		List<SortedData> sortedData = new ArrayList<SortedData>();
-		sortedData.add(new SortedData(NAME, false));
+        Mockito.when(projectDAO.getAllProjects(sortedData, "")).thenReturn(createAscProjects());
+        String sorted = DESCRIPTION + "|asc," + NAME + "|asc";
 
-		Mockito.when(projectDAO.getAllProjects(sortedData, "")).thenReturn(createDescProjects());
+        // When
+        final ProjectResult allUsers = currentResource.getAllProjects(sorted, "");
 
-		// When
-		String sorted = NAME + "|desc";
-		final ProjectResult allProjects = currentResource.getAllProjects(sorted, "");
+        // Then
+        assertNotNull(allUsers);
+        assertEquals((Integer) 2, allUsers.getTotal());
+        assertEquals(CHI2050, allUsers.getData().get(0).getName());
+        assertEquals(SUPER_CONF, allUsers.getData().get(1).getName());
+    }
 
-		// Then
-		Assert.assertNotNull(allProjects);
-		Assert.assertEquals((Integer) 2, allProjects.getTotal());
-		Assert.assertEquals(SUPER_CONF, allProjects.getData().get(0).getName());
-		Assert.assertEquals(CHI2050, allProjects.getData().get(1).getName());
-	}
+    @Test
+    public void getAllProjects_withDescSorter() {
+        // Given
+        List<SortedData> sortedData = new ArrayList<SortedData>();
+        sortedData.add(new SortedData(NAME, false));
 
-	@Test
-	public void getAllUsersWithAscSorterAndFilterTest() {
-		// Given
-		List<SortedData> sortedData = new ArrayList<SortedData>();
-		sortedData.add(new SortedData(NAME, true));
+        Mockito.when(projectDAO.getAllProjects(sortedData, "")).thenReturn(createDescProjects());
 
-		Mockito.when(projectDAO.getAllProjects(sortedData, "Conference")).thenReturn(createAscProjects());
+        // When
+        String sorted = NAME + "|desc";
+        final ProjectResult allProjects = currentResource.getAllProjects(sorted, "");
 
-		// When
-		String sorted = NAME + "|asc";
-		final ProjectResult allUsers = currentResource.getAllProjects(sorted, "Conference");
+        // Then
+        assertNotNull(allProjects);
+        assertEquals((Integer) 2, allProjects.getTotal());
+        assertEquals(SUPER_CONF, allProjects.getData().get(0).getName());
+        assertEquals(CHI2050, allProjects.getData().get(1).getName());
+    }
 
-		// Then
-		Assert.assertNotNull(allUsers);
-		Assert.assertEquals((Integer) 2, allUsers.getTotal());
-		Assert.assertEquals(CHI2050, allUsers.getData().get(0).getName());
-		Assert.assertEquals(SUPER_CONF, allUsers.getData().get(1).getName());
-	}
-	
-	@Test
-	public void prepareUpdateProjectWithoutParameterTest() {
-		// Given
+    @Test
+    public void getAllProjects_withAscSorterAndFilter() {
+        // Given
+        List<SortedData> sortedData = new ArrayList<SortedData>();
+        sortedData.add(new SortedData(NAME, true));
 
-		// When and Then
-		try {
-			currentResource.prepareUpdateProject(null);
-			Assert.fail("Must throw a WebApplicationException");
-		} catch (WebApplicationException e) {
-			// Then
-			Assert.assertEquals("Parameter is missing.", e.getMessage());
-			Assert.assertEquals(Status.BAD_REQUEST, e.getResponse().getStatusInfo());
-		}
-	}
+        Mockito.when(projectDAO.getAllProjects(sortedData, "Conference")).thenReturn(createAscProjects());
+        String sorted = NAME + "|asc";
 
-	@Test
-	public void prepareUpdateProjectWithUnknownProjectIdTest() {
-		// Given
-		Mockito.when(projectDAO.getProjectById(any(String.class))).thenReturn(Optional.empty());
+        // When
+        final ProjectResult allUsers = currentResource.getAllProjects(sorted, "Conference");
 
-		// When and Then
-		try {
-			currentResource.prepareUpdateProject("FAKE");
-			Assert.fail("Must throw a WebApplicationException");
-		} catch (WebApplicationException e) {
-			// Then
-			Assert.assertEquals("Project not found.", e.getMessage());
-			Assert.assertEquals(Status.NO_CONTENT, e.getResponse().getStatusInfo());
-		}
-	}
+        // Then
+        assertNotNull(allUsers);
+        assertEquals((Integer) 2, allUsers.getTotal());
+        assertEquals(CHI2050, allUsers.getData().get(0).getName());
+        assertEquals(SUPER_CONF, allUsers.getData().get(1).getName());
+    }
 
-	@Test
-	public void prepareUpdateProjectTest() {
-		// Given
-		Mockito.when(projectDAO.getProjectById(CHI2050_ID)).thenReturn(Optional.of(createAscProjects().get(0)));
-		Mockito.when(userDAO.getAllUsers()).thenReturn(this.createAscUsers());
+    @Test
+    public void getAllProjects_withNullParametersAndNoProjects() {
+        // Given
+        Mockito.when(projectDAO.getAllProjects(new ArrayList<SortedData>(), "")).thenReturn(null);
 
-		// When
-		final ProjectResult prepareUpdateProject = currentResource.prepareUpdateProject(CHI2050_ID);
+        // When
+        WebApplicationException exception = assertThrows(
+                WebApplicationException.class,
+                () -> currentResource.getAllProjects(null, null));
 
-		// Then
-		Assert.assertNotNull(prepareUpdateProject);
-		Assert.assertNotNull(prepareUpdateProject.getUsers());
-		Assert.assertNotNull(prepareUpdateProject.getUpdateProject());
-	}
+        // Then
+        assertEquals("Something is wrong.", exception.getMessage());
+        assertEquals(Status.INTERNAL_SERVER_ERROR, exception.getResponse().getStatusInfo());
+    }
+
+    @Test
+    public void getAllProjects_withNullParameters() {
+        // Given
+        Mockito.when(projectDAO.getAllProjects(new ArrayList<SortedData>(), "")).thenReturn(createAscProjects());
+
+        // When
+        final ProjectResult allUsers = currentResource.getAllProjects(null, null);
+
+        // Then
+        assertNotNull(allUsers);
+        assertEquals((Integer) 2, allUsers.getTotal());
+        assertEquals(CHI2050, allUsers.getData().get(0).getName());
+        assertEquals(SUPER_CONF, allUsers.getData().get(1).getName());
+    }
+
+    @Test
+    public void prepareUpdateProject_missingParameter() {
+        // Given
+
+        // When
+        WebApplicationException exception = assertThrows(
+                WebApplicationException.class,
+                () -> currentResource.prepareUpdateProject(null));
+
+        // Then
+        assertEquals("Parameter is missing.", exception.getMessage());
+        assertEquals(
+                Status.BAD_REQUEST,
+                exception.getResponse().getStatusInfo());
+    }
+
+    @Test
+    public void prepareUpdateProject_withUnknownProjectId() {
+        // Given
+        when(projectDAO.getProjectById(any(String.class)))
+                .thenReturn(Optional.empty());
+
+        // When
+        WebApplicationException exception = assertThrows(
+                WebApplicationException.class,
+                () -> currentResource.prepareUpdateProject("FAKE"));
+
+        // Then
+        assertEquals("Project not found.", exception.getMessage());
+        assertEquals(Status.NO_CONTENT, exception.getResponse().getStatusInfo());
+    }
+
+    @Test
+    public void prepareUpdateProject_success() {
+        // Given
+        Mockito.when(projectDAO.getProjectById(CHI2050_ID)).thenReturn(Optional.of(createAscProjects().get(0)));
+        Mockito.when(userDAO.getAllUsers()).thenReturn(this.createAscUsers());
+
+        // When
+        final ProjectResult prepareUpdateProject = currentResource.prepareUpdateProject(CHI2050_ID);
+
+        // Then
+        assertNotNull(prepareUpdateProject);
+        assertNotNull(prepareUpdateProject.getUsers());
+        assertNotNull(prepareUpdateProject.getUpdateProject());
+    }
+
+    @Test
+    public void getProjectsByOwner_missingParameter() {
+        // Given
+
+        // When
+        WebApplicationException exception = assertThrows(
+                WebApplicationException.class,
+                () -> currentResource.getProjectsByOwner(null));
+
+        // Then
+        assertEquals("Parameter is missing.", exception.getMessage());
+        assertEquals(Status.BAD_REQUEST, exception.getResponse().getStatusInfo());
+    }
 }

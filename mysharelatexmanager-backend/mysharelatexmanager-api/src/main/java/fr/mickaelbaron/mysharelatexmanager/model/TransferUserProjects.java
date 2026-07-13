@@ -1,12 +1,16 @@
 package fr.mickaelbaron.mysharelatexmanager.model;
 
+import jakarta.json.bind.annotation.JsonbProperty;
+
 /**
  * @author Mickael BARON (baron.mickael@gmail.com)
  */
-public class TransfertUserProjects {
+public class TransferUserProjects {
 
+	@JsonbProperty("current_owner_ref")
 	private String currentOwnerId;
 
+	@JsonbProperty("new_owner_ref")
 	private String newOwnerId;
 
 	private MODE_ENUM mode;

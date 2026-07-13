@@ -4,20 +4,17 @@ import static com.mongodb.client.model.Filters.or;
 import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.EMAIL;
 import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.FIRST_NAME;
 import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.HASHED_PASSWORD;
-import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.LAST_LOGGED_IN;
-import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.LOGIN_COUNT;
 import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.ID;
 import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.INSTITUTION;
 import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.IS_ADMIN;
+import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.LAST_LOGGED_IN;
 import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.LAST_NAME;
+import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.LOGIN_COUNT;
 import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.USERS;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -31,6 +28,8 @@ import com.mongodb.client.result.UpdateResult;
 import fr.mickaelbaron.mysharelatexmanager.dao.IUserDAO;
 import fr.mickaelbaron.mysharelatexmanager.dao.SortedData;
 import fr.mickaelbaron.mysharelatexmanager.entity.UserEntity;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 /**
  * @author Mickael BARON (baron.mickael@gmail.com)

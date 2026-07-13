@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, inject } from 'vue'
+import { ref, onMounted, watch, inject, onBeforeUnmount } from 'vue'
 import { Modal } from 'bootstrap'
 import GlobalService from '../js/GlobalService.js'
 
@@ -9,19 +9,17 @@ const props = defineProps({
   visible: {
     type: Boolean,
     required: true,
-    default: false
   },
   user: {
     type: Object,
     required: true,
-    default: () => ({})
-  }
+  },
 })
 const emit = defineEmits(['update:visible'])
 
 const modalRef = ref()
 let modal = null
-const confirmEmail = ref(null)
+const confirmEmail = ref('')
 
 onMounted(() => {
   if (modalRef.value) {
@@ -30,33 +28,38 @@ onMounted(() => {
   }
 })
 
+onBeforeUnmount(() => {
+  modalRef.value?.removeEventListener('hidden.bs.modal', close)
+  modal?.dispose()
+})
+
 watch(
   () => props.visible,
   (visible) => {
-    if (visible) {
-      confirmEmail.value = ''
-      modal.show()
-    } else {
-      modal.hide()
+    if (!visible) {
+      modal?.hide()
+      return
     }
-  }
+    confirmEmail.value = ''
+    modal?.show()
+  },
 )
 
-function onSuccessRemoveCollaberator() {
+function onSuccessRemoveCollaborator() {
   close()
 }
 
-function onErrorRemoveCollaberator(error) {
+function onErrorRemoveCollaborator(error) {
   // TODO: display error on Toast
   console.log(error)
   errorState.methods.setErrorCode(error)
 }
 
-function applyRemoveCollaberator() {
-  GlobalService.removeCollaberator(
+function removeCollaborator() {
+  GlobalService.removeCollaborator(
     props.user.id,
-    onSuccessRemoveCollaberator,
-    onErrorRemoveCollaberator
+    onSuccessRemoveCollaborator,
+    onErrorRemoveCollaborator,
   )
 }
 
@@ -67,7 +70,7 @@ function close() {
 
 <template>
   <div
-    id="aboutPopupModal"
+    id="removeCollaboratorModal"
     ref="modalRef"
     class="modal fade"
     tabindex="-1"
@@ -77,39 +80,30 @@ function close() {
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 id="exampleModalLabel" class="modal-title fs-5">
-            Remove Collaberator Confirmation
-          </h1>
-          <button
-            type="button"
-            class="btn-close"
-            aria-label="Close"
-            @click="close()"
-          ></button>
+          <h1 id="exampleModalLabel" class="modal-title fs-5">Remove Collaborator Confirmation</h1>
+          <button type="button" class="btn-close" aria-label="Close" @click="close"></button>
         </div>
         <div class="modal-body">
           <p class="my-4">
-            You are about to <b>remove</b> this collaberator
-            {{ user.email }} from all projects related to him, are you
-            absolutely sure?
+            You are about to <b>remove</b> collaborator {{ user.email }} from all associated
+            projects. Are you absolutely sure?
           </p>
           <p class="my-4">Enter the following to confirm: {{ user.email }}</p>
           <input
-            id="inputInstitution"
+            id="confirmEmail"
             v-model="confirmEmail"
             type="text"
             class="form-control"
+            autocomplete="off"
           />
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" @click="close()">
-            Close
-          </button>
+          <button type="button" class="btn btn-secondary" @click="close()">Close</button>
           <button
             type="button"
             class="btn btn-primary"
             :disabled="confirmEmail !== user.email"
-            @click="applyRemoveCollaberator"
+            @click="removeCollaborator"
           >
             Remove
           </button>

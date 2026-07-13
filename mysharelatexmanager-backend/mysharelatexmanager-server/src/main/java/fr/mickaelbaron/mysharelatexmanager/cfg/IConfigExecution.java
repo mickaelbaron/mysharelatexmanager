@@ -7,10 +7,6 @@ public interface IConfigExecution {
 
 	String getMongoDBUrl();
 
-	String getServerBase();
-
-	String getServerPort();
-
 	String getIdentificationUser();
 
 	String getIdentificationPassword();

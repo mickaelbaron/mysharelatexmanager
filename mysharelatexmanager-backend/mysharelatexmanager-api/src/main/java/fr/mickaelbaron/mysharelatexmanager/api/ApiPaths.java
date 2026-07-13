@@ -19,9 +19,9 @@ public interface ApiPaths {
 
 	static final String LOGOUT = "logout";
 
-	static final String TRANSFERT = "transfert";
+	static final String TRANSFER = "transfer";
 
-	static final String COLLABERATOR = "collaberator";
+	static final String COLLABORATOR = "collaborator";
 
 	static final String USER_FILES = "userfiles";
 }

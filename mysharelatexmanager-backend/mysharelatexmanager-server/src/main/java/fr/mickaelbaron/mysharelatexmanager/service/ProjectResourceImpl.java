@@ -5,11 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import javax.inject.Inject;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
 import fr.mickaelbaron.mysharelatexmanager.MySharelatexManagerConstant;
 import fr.mickaelbaron.mysharelatexmanager.api.ProjectResource;
 import fr.mickaelbaron.mysharelatexmanager.dao.IProjectDAO;
@@ -19,10 +14,16 @@ import fr.mickaelbaron.mysharelatexmanager.entity.EntityFactory;
 import fr.mickaelbaron.mysharelatexmanager.entity.ProjectEntity;
 import fr.mickaelbaron.mysharelatexmanager.model.Project;
 import fr.mickaelbaron.mysharelatexmanager.model.ProjectResult;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
 /**
  * @author Mickael BARON (baron.mickael@gmail.com)
  */
+@RequestScoped
 public class ProjectResourceImpl implements ProjectResource {
 
 	@Inject

@@ -11,41 +11,49 @@ import static fr.mickaelbaron.mysharelatexmanager.MySharelatexManagerTestConstan
 import static fr.mickaelbaron.mysharelatexmanager.MySharelatexManagerTestConstant.ZOUBIDA_ID;
 import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.DESCRIPTION;
 import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.NAME;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import javax.inject.Inject;
-
-import org.jglue.cdiunit.AdditionalClasses;
-import org.jglue.cdiunit.CdiRunner;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import fr.mickaelbaron.mysharelatexmanager.MySharelatexManagerTestConstant;
-import fr.mickaelbaron.mysharelatexmanager.dao.IProjectDAO;
 import fr.mickaelbaron.mysharelatexmanager.dao.SortedData;
 import fr.mickaelbaron.mysharelatexmanager.entity.ProjectEntity;
 
 /**
  * @author Mickael BARON (baron.mickael@gmail.com)
  */
-@RunWith(CdiRunner.class)
-@AdditionalClasses({ ProjectDAOMongo.class, SessionMongoTest.class })
+@ExtendWith(MockitoExtension.class)
 public class ProjectDAOImplTest extends AbstractDAOTest {
 
-	@Inject
-	private IProjectDAO currentDAO;
+	@InjectMocks
+	private ProjectDAOMongo currentDAO;
+
+	@BeforeEach
+	public void setUp() throws Exception {
+		super.setUp();
+
+		// Inject specific implementation of SessionMongoTest in currentDAO.
+		currentDAO.refSessionMongo = this.refSessionMongo;
+	}
 
 	@Test
-	public void updateProjectWithUnknownProjectTest() {
+	public void updateProject_withUnknownProject() {
 		// Given
 		final String filter = CHI2050;
 		List<ProjectEntity> allProjects = currentDAO.getAllProjects(filter);
-		Assert.assertNotNull(allProjects);
-		Assert.assertEquals(1, allProjects.size());
+		assertNotNull(allProjects);
+		assertEquals(1, allProjects.size());
 		ProjectEntity currentUser = allProjects.get(0);
 		// Bad ID.
 		currentUser.setId("555f6aba1efeb68700633359");
@@ -54,67 +62,67 @@ public class ProjectDAOImplTest extends AbstractDAOTest {
 		final boolean updateUser = currentDAO.updateProject(currentUser);
 
 		// Then
-		Assert.assertFalse(updateUser);
+		assertFalse(updateUser);
 	}
 
 	@Test
-	public void updateProjectRemoveCollaberatorsIdTest() {
+	public void updateProjectRemoveCollaboratorsIdTest() {
 		// Given
 		final String filter = SUPER_CONF;
 		List<ProjectEntity> allProjects = currentDAO.getAllProjects(filter);
-		Assert.assertNotNull(allProjects);
-		Assert.assertEquals(1, allProjects.size());
+		assertNotNull(allProjects);
+		assertEquals(1, allProjects.size());
 		ProjectEntity currentProject = allProjects.get(0);
-		Assert.assertEquals(SUPER_CONF_ID, currentProject.getId());
+		assertEquals(SUPER_CONF_ID, currentProject.getId());
 		currentProject.setDescription(CONFERENCE + CONFERENCE);
 		currentProject.setName(SUPER_CONF + SUPER_CONF);
-		final List<String> collaberatorsId = currentProject.getCollaberatorsId();
-		Assert.assertEquals(2, collaberatorsId.size());
-		collaberatorsId.remove(1);
-		currentProject.setCollaberatorsId(collaberatorsId);
+		final List<String> collaboratorsId = currentProject.getCollaboratorsId();
+		assertEquals(2, collaboratorsId.size());
+		collaboratorsId.remove(1);
+		currentProject.setCollaboratorsId(collaboratorsId);
 
 		// When
 		final boolean updateProject = currentDAO.updateProject(currentProject);
 
 		// Then
-		Assert.assertTrue(updateProject);
+		assertTrue(updateProject);
 		allProjects = currentDAO.getAllProjects(filter);
-		Assert.assertNotNull(allProjects);
-		Assert.assertEquals(1, allProjects.size());
+		assertNotNull(allProjects);
+		assertEquals(1, allProjects.size());
 		currentProject = allProjects.get(0);
-		Assert.assertEquals(CONFERENCE + CONFERENCE, currentProject.getDescription());
-		Assert.assertEquals(SUPER_CONF + SUPER_CONF, currentProject.getName());
-		Assert.assertEquals(1, currentProject.getCollaberatorsId().size());
+		assertEquals(CONFERENCE + CONFERENCE, currentProject.getDescription());
+		assertEquals(SUPER_CONF + SUPER_CONF, currentProject.getName());
+		assertEquals(1, currentProject.getCollaboratorsId().size());
 	}
 
 	@Test
-	public void updateProjectAddCollaberatorsIdTest() {
+	public void updateProjectAddCollaboratorsIdTest() {
 		// Given
 		final String filter = CHI2050;
 		List<ProjectEntity> allProjects = currentDAO.getAllProjects(filter);
-		Assert.assertNotNull(allProjects);
-		Assert.assertEquals(1, allProjects.size());
+		assertNotNull(allProjects);
+		assertEquals(1, allProjects.size());
 		ProjectEntity currentProject = allProjects.get(0);
-		Assert.assertEquals(CHI2050_ID, currentProject.getId());
+		assertEquals(CHI2050_ID, currentProject.getId());
 		currentProject.setDescription(CONFERENCE + CONFERENCE);
 		currentProject.setName(CHI2050 + CHI2050);
-		final List<String> collaberatorsId = currentProject.getCollaberatorsId();
-		Assert.assertEquals(0, collaberatorsId.size());
-		collaberatorsId.add(ZOUBIDA_ID);
-		currentProject.setCollaberatorsId(collaberatorsId);
+		final List<String> collaboratorsId = currentProject.getCollaboratorsId();
+		assertEquals(0, collaboratorsId.size());
+		collaboratorsId.add(ZOUBIDA_ID);
+		currentProject.setCollaboratorsId(collaboratorsId);
 
 		// When
 		final boolean updateProject = currentDAO.updateProject(currentProject);
 
 		// Then
-		Assert.assertTrue(updateProject);
+		assertTrue(updateProject);
 		allProjects = currentDAO.getAllProjects(filter);
-		Assert.assertNotNull(allProjects);
-		Assert.assertEquals(1, allProjects.size());
+		assertNotNull(allProjects);
+		assertEquals(1, allProjects.size());
 		currentProject = allProjects.get(0);
-		Assert.assertEquals(CONFERENCE + CONFERENCE, currentProject.getDescription());
-		Assert.assertEquals(CHI2050 + CHI2050, currentProject.getName());
-		Assert.assertEquals(1, currentProject.getCollaberatorsId().size());
+		assertEquals(CONFERENCE + CONFERENCE, currentProject.getDescription());
+		assertEquals(CHI2050 + CHI2050, currentProject.getName());
+		assertEquals(1, currentProject.getCollaboratorsId().size());
 	}
 
 	@Test
@@ -124,16 +132,16 @@ public class ProjectDAOImplTest extends AbstractDAOTest {
 
 		// When
 		final List<ProjectEntity> allProjects = currentDAO.getAllProjects();
-		
+
 		// Then
-		Assert.assertNotNull(allProjects);
-		Assert.assertEquals(2, allProjects.size());
+		assertNotNull(allProjects);
+		assertEquals(2, allProjects.size());
 		final ProjectEntity project = allProjects.get(0);
-		Assert.assertEquals(SUPER_CONF, project.getName());
-		Assert.assertEquals(2, project.getCollaberators().size());
-		Assert.assertEquals(2, project.getCollaberatorsId().size());
-		Assert.assertEquals(CHI2050, allProjects.get(1).getName());
-		Assert.assertEquals("Fri Jun 05 17:56:04 CEST 2015", project.getLastUpdated().toString());
+		assertEquals(SUPER_CONF, project.getName());
+		assertEquals(2, project.getCollaborators().size());
+		assertEquals(2, project.getCollaboratorsId().size());
+		assertEquals(CHI2050, allProjects.get(1).getName());
+		assertEquals("Fri Jun 05 17:56:04 CEST 2015", project.getLastUpdated().toString());
 	}
 
 	@Test
@@ -147,10 +155,10 @@ public class ProjectDAOImplTest extends AbstractDAOTest {
 		final List<ProjectEntity> allProjects = currentDAO.getAllProjects(sorts);
 
 		// Then
-		Assert.assertNotNull(allProjects);
-		Assert.assertEquals(2, allProjects.size());
-		Assert.assertEquals(CHI2050, allProjects.get(0).getName());
-		Assert.assertEquals(SUPER_CONF, allProjects.get(1).getName());
+		assertNotNull(allProjects);
+		assertEquals(2, allProjects.size());
+		assertEquals(CHI2050, allProjects.get(0).getName());
+		assertEquals(SUPER_CONF, allProjects.get(1).getName());
 	}
 
 	@Test
@@ -165,10 +173,10 @@ public class ProjectDAOImplTest extends AbstractDAOTest {
 		final List<ProjectEntity> allProjects = currentDAO.getAllProjects(sorts);
 
 		// Then
-		Assert.assertNotNull(allProjects);
-		Assert.assertEquals(2, allProjects.size());
-		Assert.assertEquals(CHI2050, allProjects.get(0).getName());
-		Assert.assertEquals(SUPER_CONF, allProjects.get(1).getName());
+		assertNotNull(allProjects);
+		assertEquals(2, allProjects.size());
+		assertEquals(CHI2050, allProjects.get(0).getName());
+		assertEquals(SUPER_CONF, allProjects.get(1).getName());
 	}
 
 	@Test
@@ -182,10 +190,10 @@ public class ProjectDAOImplTest extends AbstractDAOTest {
 		final List<ProjectEntity> allProjects = currentDAO.getAllProjects(sorts);
 
 		// Then
-		Assert.assertNotNull(allProjects);
-		Assert.assertEquals(2, allProjects.size());
-		Assert.assertEquals(SUPER_CONF, allProjects.get(0).getName());
-		Assert.assertEquals(CHI2050, allProjects.get(1).getName());
+		assertNotNull(allProjects);
+		assertEquals(2, allProjects.size());
+		assertEquals(SUPER_CONF, allProjects.get(0).getName());
+		assertEquals(CHI2050, allProjects.get(1).getName());
 	}
 
 	@Test
@@ -200,10 +208,10 @@ public class ProjectDAOImplTest extends AbstractDAOTest {
 		final List<ProjectEntity> allProjects = currentDAO.getAllProjects(sorts);
 
 		// Then
-		Assert.assertNotNull(allProjects);
-		Assert.assertEquals(2, allProjects.size());
-		Assert.assertEquals(SUPER_CONF, allProjects.get(0).getName());
-		Assert.assertEquals(CHI2050, allProjects.get(1).getName());
+		assertNotNull(allProjects);
+		assertEquals(2, allProjects.size());
+		assertEquals(SUPER_CONF, allProjects.get(0).getName());
+		assertEquals(CHI2050, allProjects.get(1).getName());
 	}
 
 	@Test
@@ -215,9 +223,9 @@ public class ProjectDAOImplTest extends AbstractDAOTest {
 		final List<ProjectEntity> allUsers = currentDAO.getAllProjects(filter);
 
 		// Then
-		Assert.assertNotNull(allUsers);
-		Assert.assertEquals(1, allUsers.size());
-		Assert.assertEquals(CHI2050, allUsers.get(0).getName());
+		assertNotNull(allUsers);
+		assertEquals(1, allUsers.size());
+		assertEquals(CHI2050, allUsers.get(0).getName());
 	}
 
 	@Test
@@ -229,8 +237,8 @@ public class ProjectDAOImplTest extends AbstractDAOTest {
 		final List<ProjectEntity> allUsers = currentDAO.getAllProjects(filter);
 
 		// Then
-		Assert.assertNotNull(allUsers);
-		Assert.assertEquals(0, allUsers.size());
+		assertNotNull(allUsers);
+		assertEquals(0, allUsers.size());
 	}
 
 	@Test
@@ -245,10 +253,10 @@ public class ProjectDAOImplTest extends AbstractDAOTest {
 		final List<ProjectEntity> allProjects = currentDAO.getAllProjects(sorts, filter);
 
 		// Then
-		Assert.assertNotNull(allProjects);
-		Assert.assertEquals(2, allProjects.size());
-		Assert.assertEquals(CHI2050, allProjects.get(0).getName());
-		Assert.assertEquals(SUPER_CONF, allProjects.get(1).getName());
+		assertNotNull(allProjects);
+		assertEquals(2, allProjects.size());
+		assertEquals(CHI2050, allProjects.get(0).getName());
+		assertEquals(SUPER_CONF, allProjects.get(1).getName());
 	}
 
 	@Test
@@ -259,8 +267,8 @@ public class ProjectDAOImplTest extends AbstractDAOTest {
 		final Optional<ProjectEntity> projectById = currentDAO.getProjectById(CHI2050_ID);
 
 		// Then
-		Assert.assertTrue(projectById.isPresent());
-		Assert.assertEquals(CHI2050, projectById.get().getName());
+		assertTrue(projectById.isPresent());
+		assertEquals(CHI2050, projectById.get().getName());
 	}
 
 	@Test
@@ -271,8 +279,8 @@ public class ProjectDAOImplTest extends AbstractDAOTest {
 		final List<ProjectEntity> allProjectsByOwnerId = currentDAO.getAllProjectsByOwnerId(BARON_ID);
 
 		// Then
-		Assert.assertFalse(allProjectsByOwnerId.isEmpty());
-		Assert.assertEquals(2, allProjectsByOwnerId.size());
+		assertFalse(allProjectsByOwnerId.isEmpty());
+		assertEquals(2, allProjectsByOwnerId.size());
 	}
 
 	@Test
@@ -283,7 +291,7 @@ public class ProjectDAOImplTest extends AbstractDAOTest {
 		final List<ProjectEntity> allProjectsByOwnerId = currentDAO.getAllProjectsByOwnerId("1");
 
 		// Then
-		Assert.assertTrue(allProjectsByOwnerId.isEmpty());
+		assertTrue(allProjectsByOwnerId.isEmpty());
 	}
 
 	@Test
@@ -294,41 +302,42 @@ public class ProjectDAOImplTest extends AbstractDAOTest {
 		final List<ProjectEntity> allProjectsByOwnerId = currentDAO.getAllProjectsByOwnerId(BAD_USER_ID);
 
 		// Then
-		Assert.assertTrue(allProjectsByOwnerId.isEmpty());
+		assertTrue(allProjectsByOwnerId.isEmpty());
 	}
 
 	@Test
-	public void getAllProjectsByCollaberatorsIdTest() {
+	public void getAllProjectsByCollaboratorsIdTest() {
 		// Given
 
 		// When
-		final List<ProjectEntity> allProjectsByCollaberatorsId = currentDAO.getAllProjectsByCollaberatorsId(BARON_ID);
+		final List<ProjectEntity> allProjectsByCollaboratorsId = currentDAO.getAllProjectsByCollaboratorsId(BARON_ID);
 
 		// Then
-		Assert.assertFalse(allProjectsByCollaberatorsId.isEmpty());
-		Assert.assertEquals(1, allProjectsByCollaberatorsId.size());
+		assertFalse(allProjectsByCollaboratorsId.isEmpty());
+		assertEquals(1, allProjectsByCollaboratorsId.size());
 	}
 
 	@Test
-	public void getAllProjectsByCollaberatorsIdWithNoObjectIdTest() {
+	public void getAllProjectsByCollaboratorsIdWithNoObjectIdTest() {
 		// Given
 
 		// When
-		final List<ProjectEntity> allProjectsByCollaberatorsId = currentDAO.getAllProjectsByCollaberatorsId("1");
+		final List<ProjectEntity> allProjectsByCollaboratorsId = currentDAO.getAllProjectsByCollaboratorsId("1");
 
 		// Then
-		Assert.assertTrue(allProjectsByCollaberatorsId.isEmpty());
+		assertTrue(allProjectsByCollaboratorsId.isEmpty());
 	}
 
 	@Test
-	public void getAllProjectsByCollaberatorsIdWithoutResultTest() {
+	public void getAllProjectsByCollaboratorsIdWithoutResultTest() {
 		// Given
 
 		// When
-		final List<ProjectEntity> allProjectsByCollaberatorsId = currentDAO.getAllProjectsByCollaberatorsId(BAD_USER_ID);
+		final List<ProjectEntity> allProjectsByCollaboratorsId = currentDAO
+				.getAllProjectsByCollaboratorsId(BAD_USER_ID);
 
 		// Then
-		Assert.assertTrue(allProjectsByCollaberatorsId.isEmpty());
+		assertTrue(allProjectsByCollaboratorsId.isEmpty());
 	}
 
 	@Test
@@ -339,149 +348,150 @@ public class ProjectDAOImplTest extends AbstractDAOTest {
 		final boolean updateProjectsOwner = currentDAO.updateProjectsOwner(BARON_ID, POILU_ID);
 
 		// Then
-		Assert.assertTrue(updateProjectsOwner);
+		assertTrue(updateProjectsOwner);
 		final List<ProjectEntity> allProjectsByOwnerId = currentDAO.getAllProjectsByOwnerId(POILU_ID);
-		Assert.assertNotNull(allProjectsByOwnerId);
-		Assert.assertEquals(2, allProjectsByOwnerId.size());
+		assertNotNull(allProjectsByOwnerId);
+		assertEquals(2, allProjectsByOwnerId.size());
 	}
 
 	@Test
-	public void removeCollaberatorUtilTest() {
+	public void removeCollaboratorUtilTest() {
 		// Given
-		List<String> collaberatorsId = new ArrayList<String>();
-		collaberatorsId.add(BARON_ID);
-		collaberatorsId.add(POILU_ID);
-		collaberatorsId.add(ZOUBIDA_ID);
-		Assert.assertEquals(3, collaberatorsId.size());
+		List<String> collaboratorsId = new ArrayList<String>();
+		collaboratorsId.add(BARON_ID);
+		collaboratorsId.add(POILU_ID);
+		collaboratorsId.add(ZOUBIDA_ID);
+		assertEquals(3, collaboratorsId.size());
 
 		// When
-		final List<String> removeCollabertorResult = ((ProjectDAOMongo) currentDAO).removeCollaberatorUtil(BARON_ID,
-				collaberatorsId);
+		final List<String> removeCollabortorResult = ((ProjectDAOMongo) currentDAO).removeCollaboratorUtil(BARON_ID,
+				collaboratorsId);
 
 		// Then
-		Assert.assertEquals(2, removeCollabertorResult.size());
+		assertEquals(2, removeCollabortorResult.size());
 	}
 
 	@Test
-	public void removeCollaberatorUtilIfEmptyTest() {
+	public void removeCollaboratorUtilIfEmptyTest() {
 		// Given
-		List<String> collaberatorsId = new ArrayList<String>();
-		Assert.assertEquals(0, collaberatorsId.size());
+		List<String> collaboratorsId = new ArrayList<String>();
+		assertEquals(0, collaboratorsId.size());
 
 		// When
-		final List<String> removeCollabertorResult = ((ProjectDAOMongo) currentDAO).removeCollaberatorUtil(BARON_ID,
-				collaberatorsId);
+		final List<String> removeCollabortorResult = ((ProjectDAOMongo) currentDAO).removeCollaboratorUtil(BARON_ID,
+				collaboratorsId);
 
 		// Then
-		Assert.assertEquals(0, removeCollabertorResult.size());
+		assertEquals(0, removeCollabortorResult.size());
 	}
 
 	@Test
-	public void removeCollaberatorIfNotFoundTest() {
+	public void removeCollaboratorIfNotFoundTest() {
 		// Given
-		List<String> collaberatorsId = new ArrayList<String>();
-		collaberatorsId.add(MySharelatexManagerTestConstant.POILU_ID);
-		Assert.assertEquals(1, collaberatorsId.size());
+		List<String> collaboratorsId = new ArrayList<String>();
+		collaboratorsId.add(MySharelatexManagerTestConstant.POILU_ID);
+		assertEquals(1, collaboratorsId.size());
 
 		// When
-		final List<String> removeCollabertorResult = ((ProjectDAOMongo) currentDAO).removeCollaberatorUtil(BARON_ID,
-				collaberatorsId);
+		final List<String> removeCollabortorResult = ((ProjectDAOMongo) currentDAO).removeCollaboratorUtil(BARON_ID,
+				collaboratorsId);
 
 		// Then
-		Assert.assertEquals(1, removeCollabertorResult.size());
+		assertEquals(1, removeCollabortorResult.size());
 	}
 
 	@Test
-	public void transfertAllProjectsTest() {
+	public void transferAllProjectsTest() {
 		// Given
 
 		// When
-		final List<ProjectEntity> transfertAllProjects = currentDAO.transfertAllProjects(BARON_ID, ZOUBIDA_ID);
+		final List<ProjectEntity> transferAllProjects = currentDAO.transferAllProjects(BARON_ID, ZOUBIDA_ID);
 
 		// Then
-		Assert.assertEquals(0, transfertAllProjects.size());
+		assertEquals(0, transferAllProjects.size());
 	}
 
 	@Test
-	public void transfertProjectsIfExistingCollaberatorsTest() {
+	public void transferProjectsIfExistingCollaboratorsTest() {
 		// Given
 
 		// When
-		final List<ProjectEntity> transfertAllProjects = currentDAO.transfertProjectsIfExistingCollaberators(BARON_ID,
+		final List<ProjectEntity> transferAllProjects = currentDAO.transferProjectsIfExistingCollaborators(BARON_ID,
 				ZOUBIDA_ID);
 
 		// Then
-		Assert.assertEquals(1, transfertAllProjects.size());
+		assertEquals(1, transferAllProjects.size());
 	}
 
 	@Test
-	public void transfertProjectsIfNewOwnerIsCollaberatorWithNoMatchCollaberatorTest() {
+	public void transferProjectsIfNewOwnerIsCollaboratorWithNoMatchCollaboratorTest() {
 		// Given
 
 		// When
-		final List<ProjectEntity> transfertAllProjects = currentDAO.transfertProjectsIfNewOwnerIsCollaberator(BARON_ID,
+		final List<ProjectEntity> transferAllProjects = currentDAO.transferProjectsIfNewOwnerIsCollaborator(BARON_ID,
 				ZOUBIDA_ID);
 
 		// Then
-		Assert.assertEquals(2, transfertAllProjects.size());
+		assertEquals(2, transferAllProjects.size());
 	}
 
 	@Test
-	public void transfertProjectsIfNewOwnerIsCollaberatorWithMatchCollaberatorTest() {
+	public void transferProjectsIfNewOwnerIsCollaboratorWithMatchCollaboratorTest() {
 		// Given
 
 		// When
-		final List<ProjectEntity> transfertAllProjects = currentDAO.transfertProjectsIfNewOwnerIsCollaberator(BARON_ID,
+		final List<ProjectEntity> transferAllProjects = currentDAO.transferProjectsIfNewOwnerIsCollaborator(BARON_ID,
 				POILU_ID);
 
 		// Then
-		Assert.assertEquals(1, transfertAllProjects.size());
+		assertEquals(1, transferAllProjects.size());
 	}
 
 	@Test
-	public void isCollaberatorPresentTest() {
+	public void isCollaboratorPresentTest() {
 		// Given
-		List<String> collaberatorsId = new ArrayList<String>();
-		collaberatorsId.add(BARON_ID);
-		collaberatorsId.add(POILU_ID);
-		collaberatorsId.add(ZOUBIDA_ID);
-		Assert.assertEquals(3, collaberatorsId.size());
-		
+		List<String> collaboratorsId = new ArrayList<String>();
+		collaboratorsId.add(BARON_ID);
+		collaboratorsId.add(POILU_ID);
+		collaboratorsId.add(ZOUBIDA_ID);
+		assertEquals(3, collaboratorsId.size());
+
 		// When
-		final boolean collaberatorPresent = ((ProjectDAOMongo) currentDAO).isCollaberatorPresent(BARON_ID, collaberatorsId);
-		
+		final boolean collaboratorPresent = ((ProjectDAOMongo) currentDAO).isCollaboratorPresent(BARON_ID,
+				collaboratorsId);
+
 		// Then
-		Assert.assertTrue(collaberatorPresent);
+		assertTrue(collaboratorPresent);
 	}
-	
+
 	@Test
-	public void isCollaberatorNotPresentTest() {
+	public void isCollaboratorNotPresentTest() {
 		// Given
-		List<String> collaberatorsId = new ArrayList<String>();
-		collaberatorsId.add(POILU_ID);
-		collaberatorsId.add(ZOUBIDA_ID);
-		Assert.assertEquals(2, collaberatorsId.size());
-		
+		List<String> collaboratorsId = new ArrayList<String>();
+		collaboratorsId.add(POILU_ID);
+		collaboratorsId.add(ZOUBIDA_ID);
+		assertEquals(2, collaboratorsId.size());
+
 		// When
-		final boolean collaberatorPresent = ((ProjectDAOMongo) currentDAO).isCollaberatorPresent(BARON_ID, collaberatorsId);
-		
+		final boolean collaboratorPresent = ((ProjectDAOMongo) currentDAO).isCollaboratorPresent(BARON_ID,
+				collaboratorsId);
+
 		// Then
-		Assert.assertFalse(collaberatorPresent);
+		assertFalse(collaboratorPresent);
 	}
-	
+
 	@Test
-	public void removeCollaberatorTest() {
+	public void removeCollaboratorTest() {
 		// Given
-		
+
 		// When
-		Optional<Long> removeCollaberator = currentDAO.removeCollaberator(POILU_ID);
-		
+		Optional<Long> removeCollaborator = currentDAO.removeCollaborator(POILU_ID);
+
 		// Then
-		Assert.assertTrue(removeCollaberator.isPresent());
-		Assert.assertEquals(Long.valueOf(1), removeCollaberator.get());
-		final List<ProjectEntity> allProjectsByCollaberatorsId = currentDAO.getAllProjectsByCollaberatorsId(POILU_ID);
-		Assert.assertNotNull(allProjectsByCollaberatorsId);
-		Assert.assertEquals(0, allProjectsByCollaberatorsId.size());
+		assertTrue(removeCollaborator.isPresent());
+		assertEquals(Long.valueOf(1), removeCollaborator.get());
+		final List<ProjectEntity> allProjectsByCollaboratorsId = currentDAO.getAllProjectsByCollaboratorsId(POILU_ID);
+		assertNotNull(allProjectsByCollaboratorsId);
+		assertEquals(0, allProjectsByCollaboratorsId.size());
 	}
 }
-

@@ -29,7 +29,7 @@ public class EntityFactory {
 	public static Project createProject(ProjectEntity refProject) {
 		Project newProject = new Project();
 		newProject.setActive(refProject.isActive());
-		newProject.setCollaberators(createShortUsers(refProject.getCollaberators()));
+		newProject.setCollaborators(createShortUsers(refProject.getCollaborators()));
 		newProject.setDescription(refProject.getDescription());
 		newProject.setId(refProject.getId());
 		newProject.setName(refProject.getName());
@@ -78,7 +78,7 @@ public class EntityFactory {
 	public static ProjectEntity createProjectEntity(Project refProject) {
 		ProjectEntity newProject = new ProjectEntity();
 		newProject.setActive(refProject.isActive());
-		newProject.setCollaberatorsId(createCollaborators(refProject.getCollaberators()));
+		newProject.setCollaboratorsId(createCollaborators(refProject.getCollaborators()));
 		newProject.setDescription(refProject.getDescription());
 		newProject.setId(refProject.getId());
 		newProject.setName(refProject.getName());

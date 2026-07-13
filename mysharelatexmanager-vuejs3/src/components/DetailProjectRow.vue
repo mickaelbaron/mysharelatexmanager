@@ -1,34 +1,38 @@
 <script setup>
-defineProps({
-  data: {
+const props = defineProps({
+  project: {
     type: Object,
-    required: true
-  }
+    required: true,
+  },
 })
+
+const fields = [
+  ['Id', 'id'],
+  ['Name', 'name'],
+  ['Description', 'description'],
+  ['Owner Id', 'owner_ref'],
+  ['Owner', 'owner'],
+]
 </script>
 
 <template>
   <div>
-    <div class="inline field">
-      <label>Id: {{ data.id }}</label>
+    <div v-for="[label, key] in fields" :key="key" class="inline field">
+      <label>{{ label }}: {{ props.project[key] }}</label>
     </div>
+
     <div class="inline field">
-      <label>Name: {{ data.name }}</label>
+      <label>
+        Collaborators:
+        {{ props.project.collaborators.join(', ') }}
+      </label>
     </div>
+
     <div class="inline field">
-      <label>Description: {{ data.description }}</label>
-    </div>
-    <div class="inline field">
-      <label>Owner Id: {{ data.owner_ref }}</label>
-    </div>
-    <div class="inline field">
-      <label>Owner: {{ data.owner }}</label>
-    </div>
-    <div class="inline field">
-      <label>Collaberators: {{ data.collaberators }}</label>
-    </div>
-    <div class="inline field">
-      <label>is Active: {{ data.active }}</label>
+      <label>
+        Active:
+        {{ props.project.active ? 'Yes' : 'No' }}
+      </label>
     </div>
   </div>
 </template>
