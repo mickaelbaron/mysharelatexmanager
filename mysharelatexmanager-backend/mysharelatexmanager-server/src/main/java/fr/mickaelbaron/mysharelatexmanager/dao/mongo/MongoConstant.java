@@ -15,7 +15,7 @@ public interface MongoConstant {
 
 	public static final String DESCRIPTION = "description";
 
-	public static final String COLLABERATOR_REFS = "collaberator_refs";
+	public static final String COLLABORATOR_REFS = "collaberator_refs";
 
 	public static final String LAST_NAME = "last_name";
 

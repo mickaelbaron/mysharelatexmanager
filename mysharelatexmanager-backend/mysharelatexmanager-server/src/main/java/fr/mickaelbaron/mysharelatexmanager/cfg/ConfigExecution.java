@@ -1,10 +1,10 @@
 package fr.mickaelbaron.mysharelatexmanager.cfg;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 /**
  * @author Mickael BARON (baron.mickael@gmail.com)
@@ -15,14 +15,6 @@ public class ConfigExecution implements IConfigExecution {
 	@Inject
 	@ConfigProperty(name = "mysharelatexmanager.mongodb.url", defaultValue = "mongodb://localhost:27017")
 	private String mongoDBUrl;
-
-	@Inject
-	@ConfigProperty(name = "mysharelatexmanager.server.base", defaultValue = "http://127.0.0.1/")
-	private String serverBase;
-
-	@Inject
-	@ConfigProperty(name = "mysharelatexmanager.server.port", defaultValue = "9991")
-	private String serverPort;
 
 	@Inject
 	@ConfigProperty(name = "mysharelatexmanager.identification.user", defaultValue = "admin")
@@ -50,7 +42,7 @@ public class ConfigExecution implements IConfigExecution {
 
 	@PostConstruct
 	public void init() {
-		System.out.println(displayAllConfigExecution());
+		System.out.println("ConfigExecution initialized with: " + this.displayAllConfigExecution());
 	}
 
 	public String getUserFilesPath() {
@@ -59,14 +51,6 @@ public class ConfigExecution implements IConfigExecution {
 
 	public String getMongoDBUrl() {
 		return mongoDBUrl;
-	}
-
-	public String getServerBase() {
-		return serverBase;
-	}
-
-	public String getServerPort() {
-		return serverPort;
 	}
 
 	public String getIdentificationUser() {
@@ -89,10 +73,13 @@ public class ConfigExecution implements IConfigExecution {
 		return sessionTimeout;
 	}
 
+	public String toString() {
+		return this.displayAllConfigExecution();
+	}
+
 	@Override
 	public String displayAllConfigExecution() {
-		return "ConfigExecution [mysharelatexmanager.mongodb.url=" + mongoDBUrl + ", mysharelatexmanager.server.base="
-				+ serverBase + ", mysharelatexmanager.server.port=" + serverPort
+		return "ConfigExecution [mysharelatexmanager.mongodb.url=" + mongoDBUrl
 				+ ", mysharelatexmanager.identification.user=" + identificationUser
 				+ ", mysharelatexmanager.identification.password=" + identificationPassword
 				+ ", mysharelatexmanager.encrypt.password=" + encryptPassword + ", mysharelatexmanager.encrypt.noise="

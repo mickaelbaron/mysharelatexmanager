@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { Modal } from 'bootstrap'
 import GlobalService from '../js/GlobalService.js'
 
@@ -7,28 +7,31 @@ const props = defineProps({
   visible: {
     type: Boolean,
     required: true,
-    default: false
   },
   projectId: {
     type: String,
     required: true,
-    default: ''
-  }
+  },
 })
 const emit = defineEmits(['update:visible', 'save-new-projectdata'])
 
 const modalRef = ref()
 let modal = null
-const updatedProject = reactive({
+
+const createEmptyProject = () => ({
   id: '',
   name: '',
   description: '',
   owner: '',
   owner_ref: '',
-  collaberators: [],
-  active: true
+  collaborators: [],
+  active: true,
 })
+
+const updatedProject = reactive(createEmptyProject())
+
 const users = ref([])
+const selectedCollaborator = ref('')
 
 onMounted(() => {
   if (modalRef.value) {
@@ -37,29 +40,37 @@ onMounted(() => {
   }
 })
 
+onBeforeUnmount(() => {
+  modalRef.value?.removeEventListener('hidden.bs.modal', close)
+  modal?.dispose()
+})
+
 watch(
   () => props.visible,
   (visible) => {
-    if (visible) {
-      GlobalService.prepareUpdateProject(
-        props.projectId,
-        onSuccessPrepareUpdateProject,
-        onErrorPrepareUpdateProject
-      )
-    } else {
-      modal.hide()
+    if (!visible) {
+      modal?.hide()
+      return
     }
-  }
+
+    GlobalService.prepareUpdateProject(
+      props.projectId,
+      onSuccessPrepareUpdateProject,
+      onErrorPrepareUpdateProject,
+    )
+  },
+  {
+    immediate: true,
+  },
 )
 
 watch(
   () => updatedProject.owner_ref,
   (currentValue) => {
-    let currentOwner = users.value.find(
-      (element) => element.id === currentValue
-    )
-    updatedProject.owner = currentOwner.email
-  }
+    const owner = users.value.find((user) => user.id === currentValue)
+
+    updatedProject.owner = owner?.email ?? ''
+  },
 )
 
 function onSuccessUpdateProject(data) {
@@ -78,12 +89,13 @@ function onErrorUpdateProject(error) {
 }
 
 function onSuccessPrepareUpdateProject(data) {
-  Object.assign(updatedProject, data.updateProject)
+  Object.assign(updatedProject, createEmptyProject(), data.update_project)
+
   users.value = data.users
     .map((user) => {
       return {
         id: user.id,
-        email: user.email
+        email: user.email,
       }
     })
     .sort((a, b) => {
@@ -104,31 +116,37 @@ function onErrorPrepareUpdateProject(error) {
 }
 
 function applyUpdateProject() {
-  GlobalService.updateProject(
-    updatedProject,
-    onSuccessUpdateProject,
-    onErrorUpdateProject
-  )
+  GlobalService.updateProject(updatedProject, onSuccessUpdateProject, onErrorUpdateProject)
 }
 
 function close() {
   emit('update:visible', false)
 }
 
-function onRemoveCollaberators(index) {
-  updatedProject.collaberators.splice(index, 1)
+function onRemoveCollaborators(index) {
+  updatedProject.collaborators.splice(index, 1)
 }
 
-function onChange(index) {
-  const checkUsername = (obj) => obj.id === index.target.value
+function addCollaborator() {
+  const user = users.value.find((user) => user.id === selectedCollaborator.value)
 
-  // Check if this value is existing into collaberators
-  if (!updatedProject.collaberators.some(checkUsername)) {
-    let newUser = users.value.find(
-      (element) => element.id === index.target.value
-    )
-    updatedProject.collaberators.push({ id: newUser.id, email: newUser.email })
+  if (!user) return
+
+  const exists = updatedProject.collaborators.some((collaborator) => collaborator.id === user.id)
+
+  if (!exists) {
+    updatedProject.collaborators.push({
+      id: user.id,
+      email: user.email,
+    })
   }
+
+  // Remet le select sur l'option vide
+  selectedCollaborator.value = ''
+}
+
+function isCollaboratorSelected(userId) {
+  return updatedProject.collaborators.some((collaborator) => collaborator.id === userId)
 }
 </script>
 
@@ -138,15 +156,10 @@ function onChange(index) {
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Project Edition</h5>
-          <button
-            type="button"
-            class="btn-close"
-            aria-label="Close"
-            @click="close()"
-          ></button>
+          <button type="button" class="btn-close" aria-label="Close" @click="close()"></button>
         </div>
-        <div class="modal-body">
-          <form>
+        <form @submit.prevent="applyUpdateProject">
+          <div class="modal-body">
             <div class="mb-3">
               <label for="inputId" class="form-label">Id</label>
               <input
@@ -166,20 +179,16 @@ function onChange(index) {
                 type="text"
                 class="form-control"
                 placeholder="Name"
-                @keydown.enter="applyUpdateProject"
               />
             </div>
             <div class="mb-3">
-              <label for="inputDescription" class="form-label"
-                >Description</label
-              >
+              <label for="inputDescription" class="form-label">Description</label>
               <input
                 id="inputDescription"
                 v-model="updatedProject.description"
                 type="text"
                 class="form-control"
                 placeholder="Description"
-                @keydown.enter="applyUpdateProject"
               />
             </div>
             <div class="mb-3">
@@ -187,15 +196,10 @@ function onChange(index) {
               <select
                 id="owner"
                 v-model="updatedProject.owner_ref"
-                type="text"
                 placeholder="Id"
                 class="form-control"
               >
-                <option
-                  v-for="option in users"
-                  :key="option.id"
-                  :value="option.id"
-                >
+                <option v-for="option in users" :key="option.id" :value="option.id">
                   {{ option.email }}
                 </option>
               </select>
@@ -208,42 +212,36 @@ function onChange(index) {
                   class="form-check-input"
                   type="checkbox"
                 />
-                <label class="form-check-label" for="checkIsActive">
-                  Is Active ?
-                </label>
+                <label class="form-check-label" for="checkIsActive">Active</label>
               </div>
             </div>
             <div class="mb-3">
-              <label for="selectcollaberators" class="form-label"
-                >Collaberators</label
-              >
+              <label for="selectcollaborators" class="form-label">Collaborators</label>
               <select
-                id="selectcollaberators"
-                type="text"
+                id="selectcollaborators"
+                v-model="selectedCollaborator"
                 placeholder="Id"
                 class="form-control"
-                @change="onChange"
+                @change="addCollaborator"
               >
-                <option value="undefined" disabled>Select your option</option>
+                <option value="" disabled>Select a collaborator</option>
                 <option
-                  v-for="option in users"
-                  :key="option.id"
-                  :value="option.id"
+                  v-for="user in users"
+                  :key="user.id"
+                  :value="user.id"
+                  :disabled="isCollaboratorSelected(user.id)"
                 >
-                  {{ option.email }}
+                  {{ user.email }}
                 </option>
               </select>
             </div>
             <div class="mb-3">
               <ul>
-                <li
-                  v-for="(item, index) in updatedProject.collaberators"
-                  :key="item.id"
-                >
+                <li v-for="(item, index) in updatedProject.collaborators" :key="item.id">
                   <button
                     type="button"
                     class="btn btn-outline-danger ms-2 btn-sm"
-                    @click="onRemoveCollaberators(index)"
+                    @click="onRemoveCollaborators(index)"
                   >
                     <i class="bi bi-trash"></i>
                   </button>
@@ -251,20 +249,12 @@ function onChange(index) {
                 </li>
               </ul>
             </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" @click="close()">
-            Close
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="applyUpdateProject()"
-          >
-            Save changes
-          </button>
-        </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="close()">Close</button>
+            <button type="submit" class="btn btn-primary">Save changes</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

@@ -50,21 +50,21 @@ public interface IProjectDAO {
 	 * @param newOwnerId
 	 * @return
 	 */
-	List<ProjectEntity> transfertAllProjects(String oldOwnerId, String newOwnerId);
+	List<ProjectEntity> transferAllProjects(String oldOwnerId, String newOwnerId);
 
 	/**
 	 * @param oldOwnerId
 	 * @param newOwnerId
 	 * @return
 	 */
-	List<ProjectEntity> transfertProjectsIfExistingCollaberators(String oldOwnerId, String newOwnerId);
+	List<ProjectEntity> transferProjectsIfExistingCollaborators(String oldOwnerId, String newOwnerId);
 
 	/**
 	 * @param oldOwnerId
 	 * @param newOwnerId
 	 * @return
 	 */
-	List<ProjectEntity> transfertProjectsIfNewOwnerIsCollaberator(String oldOwnerId, String newOwnerId);
+	List<ProjectEntity> transferProjectsIfNewOwnerIsCollaborator(String oldOwnerId, String newOwnerId);
 
 	/**
 	 * @param id
@@ -82,10 +82,10 @@ public interface IProjectDAO {
 	 * @param ownerId
 	 * @return
 	 */
-	List<ProjectEntity> getAllProjectsByCollaberatorsId(String ownerId);
+	List<ProjectEntity> getAllProjectsByCollaboratorsId(String ownerId);
 	
 	/**
-	 * @param collaberatorId
+	 * @param collaboratorId
 	 */
-	Optional<Long> removeCollaberator(String collaberatorId);
+	Optional<Long> removeCollaborator(String collaboratorId);
 }

@@ -2,7 +2,7 @@ package fr.mickaelbaron.mysharelatexmanager.entity;
 
 import java.util.Date;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.json.bind.annotation.JsonbProperty;
 
 /**
  * @author Mickael BARON (baron.mickael@gmail.com)
@@ -35,7 +35,7 @@ public class UserEntity {
 		this.id = id;
 	}
 
-	@JsonProperty("last_name")
+	@JsonbProperty("last_name")
 	public String getLastName() {
 		return lastName;
 	}
@@ -51,7 +51,7 @@ public class UserEntity {
 				+ ", loginCount=" + loginCount + ", lastLoggedIn=" + lastLoggedIn + "]";
 	}
 
-	@JsonProperty("isAdmin")
+	@JsonbProperty("isAdmin")
 	public boolean isAdmin() {
 		return isAdmin;
 	}
@@ -68,7 +68,7 @@ public class UserEntity {
 		this.institution = institution;
 	}
 
-	@JsonProperty("first_name")
+	@JsonbProperty("first_name")
 	public String getFirstName() {
 		return firstName;
 	}

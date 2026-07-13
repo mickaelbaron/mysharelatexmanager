@@ -1,78 +1,78 @@
 <script setup>
-import { reactive, ref, onMounted, watch, inject } from 'vue'
+import { inject, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Toast } from 'bootstrap'
 import { useRouter } from 'vue-router'
 
-const errorState = inject('ErrorState')
 const router = useRouter()
+const errorState = inject('ErrorState')
 
-const myState = reactive({
-  code: 200,
-  message: ''
-})
+const toastRef = ref(null)
+const errorCode = ref(200)
+const errorMessage = ref('')
 
-const modalRef = ref()
-let toast = null
+let toast
 
-onMounted(() => {
-  if (modalRef.value) {
-    toast = new Toast(modalRef.value)
-    modalRef.value.addEventListener('hidden.bs.toast', close)
-  }
-})
-
-watch(errorState.state, () => {
-  // Do nothing, clear error.
-  if (errorState.state.code === 200) {
-    return
-  }
-
-  myState.code = errorState.state.code
-
-  if (myState.code === 401) {
-    myState.message = 'Invalid username or password.'
-  } else {
-    myState.message = errorState.state.message
-  }
-
-  // Initialize errorState.
-  errorState.methods.setError(200)
-  toast.show()
-})
-
-function close() {
-  if (myState.code === 401) {
-    router.push({
-      name: 'SignIn'
-    })
+function onToastHidden() {
+  if (errorCode.value === 401) {
+    router.push({ name: 'SignIn' })
   }
 }
+
+onMounted(() => {
+  if (!toastRef.value) return
+
+  toast = new Toast(toastRef.value)
+  toastRef.value.addEventListener('hidden.bs.toast', onToastHidden)
+})
+
+onBeforeUnmount(() => {
+  toastRef.value?.removeEventListener('hidden.bs.toast', onToastHidden)
+})
+
+watch(
+  () => errorState.state.code,
+  (code) => {
+    if (code === 200) return
+
+    errorCode.value = code
+
+    switch (code) {
+      case 401:
+        errorMessage.value = 'Invalid username or password.'
+        break
+
+      default:
+        errorMessage.value = errorState.state.message
+    }
+
+    errorState.methods.setError(200)
+    toast?.show()
+  },
+)
 </script>
 
 <template>
   <div class="toast-container position-fixed top-0 end-0 p-3">
     <div
-      id="liveToast"
-      ref="modalRef"
+      ref="toastRef"
       class="toast"
       role="alert"
       aria-live="assertive"
+      aria-atomic="true"
       data-bs-animation="true"
       data-bs-autohide="true"
       data-bs-delay="5000"
-      aria-atomic="true"
     >
       <div class="toast-header">
         <strong class="me-auto">MyShareLaTexManager</strong>
         <small>Error message</small>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="toast"
-          aria-label="Close"
-        ></button>
+
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close" />
       </div>
-      <div class="toast-body">{{ myState.message }}</div>
+
+      <div class="toast-body">
+        {{ errorMessage }}
+      </div>
     </div>
   </div>
 </template>

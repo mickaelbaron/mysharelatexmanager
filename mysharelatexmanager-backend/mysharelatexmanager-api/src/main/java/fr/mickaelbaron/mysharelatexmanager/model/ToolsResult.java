@@ -1,5 +1,7 @@
 package fr.mickaelbaron.mysharelatexmanager.model;
 
+import jakarta.json.bind.annotation.JsonbProperty;
+
 /**
  * @author Mickael BARON (baron.mickael@gmail.com)
  */
@@ -7,10 +9,10 @@ public class ToolsResult {
 
 	private String message;
 
+	@JsonbProperty("error")
 	private boolean isError;
 
 	public ToolsResult() {
-
 	}
 
 	public ToolsResult(boolean pIsError, String pMessage) {

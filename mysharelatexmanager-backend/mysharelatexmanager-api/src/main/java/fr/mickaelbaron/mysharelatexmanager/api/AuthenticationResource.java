@@ -4,16 +4,15 @@ import static fr.mickaelbaron.mysharelatexmanager.api.ApiPaths.AUTHENTICATION;
 import static fr.mickaelbaron.mysharelatexmanager.api.ApiPaths.LOGIN;
 import static fr.mickaelbaron.mysharelatexmanager.api.ApiPaths.LOGOUT;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import fr.mickaelbaron.mysharelatexmanager.model.Credentials;
 import fr.mickaelbaron.mysharelatexmanager.model.CredentialsResult;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 /**
  * @author Mickael BARON (baron.mickael@gmail.com)

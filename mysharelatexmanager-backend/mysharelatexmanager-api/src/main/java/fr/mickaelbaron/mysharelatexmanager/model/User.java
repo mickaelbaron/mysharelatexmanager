@@ -2,7 +2,8 @@ package fr.mickaelbaron.mysharelatexmanager.model;
 
 import java.util.Date;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.json.bind.annotation.JsonbDateFormat;
+import jakarta.json.bind.annotation.JsonbProperty;
 
 /**
  * @author Mickael BARON (baron.mickael@gmail.com)
@@ -11,20 +12,27 @@ public class User {
 
 	private String id;
 
+	@JsonbProperty("last_name")
 	private String lastName;
 
+	@JsonbProperty("admin")
 	private boolean isAdmin;
 
 	private String institution;
 
+	@JsonbProperty("first_name")
 	private String firstName;
 
 	private String email;
 
+	@JsonbProperty("hashed_password")
 	private String hashedPassword;
 
+	@JsonbProperty("login_count")
 	private Integer loginCount;
 
+	@JsonbDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX")
+	@JsonbProperty("last_logged_in")
 	private Date lastLoggedIn;
 
 	public String getId() {
@@ -35,7 +43,6 @@ public class User {
 		this.id = id;
 	}
 
-	@JsonProperty("last_name")
 	public String getLastName() {
 		return lastName;
 	}
@@ -51,7 +58,6 @@ public class User {
 				+ ", loginCount=" + loginCount + ", lastLoggedIn=" + lastLoggedIn + "]";
 	}
 
-	@JsonProperty("isAdmin")
 	public boolean isAdmin() {
 		return isAdmin;
 	}
@@ -68,7 +74,6 @@ public class User {
 		this.institution = institution;
 	}
 
-	@JsonProperty("first_name")
 	public String getFirstName() {
 		return firstName;
 	}

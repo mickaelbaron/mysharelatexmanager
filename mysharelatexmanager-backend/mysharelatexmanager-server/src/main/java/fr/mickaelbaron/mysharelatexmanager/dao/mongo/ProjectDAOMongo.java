@@ -1,7 +1,7 @@
 package fr.mickaelbaron.mysharelatexmanager.dao.mongo;
 
 import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.ACTIVE;
-import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.COLLABERATOR_REFS;
+import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.COLLABORATOR_REFS;
 import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.DESCRIPTION;
 import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.EMAIL;
 import static fr.mickaelbaron.mysharelatexmanager.dao.mongo.MongoConstant.ID;
@@ -17,9 +17,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -34,6 +31,8 @@ import fr.mickaelbaron.mysharelatexmanager.dao.IProjectDAO;
 import fr.mickaelbaron.mysharelatexmanager.dao.SortedData;
 import fr.mickaelbaron.mysharelatexmanager.entity.ProjectEntity;
 import fr.mickaelbaron.mysharelatexmanager.entity.ShortUserEntity;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 /**
  * @author Mickael BARON (baron.mickael@gmail.com)
@@ -44,7 +43,7 @@ public class ProjectDAOMongo implements IProjectDAO {
 	@Inject
 	IMongoSession refSessionMongo;
 
-	private static final String COLLABERATOR_INFO = "collaberatorinfo";
+	private static final String COLLABORATOR_INFO = "collaboratorinfo";
 
 	private static final String OWNER_INFO = "ownerinfo";
 
@@ -102,15 +101,15 @@ public class ProjectDAOMongo implements IProjectDAO {
 		aggregateFilters.add(unwind);
 
 		// Collapse.
-		Bson secondLookup = new Document("$lookup", new Document("from", USERS).append("localField", COLLABERATOR_REFS)
-				.append("foreignField", ID).append("as", COLLABERATOR_INFO));
+		Bson secondLookup = new Document("$lookup", new Document("from", USERS).append("localField", COLLABORATOR_REFS)
+				.append("foreignField", ID).append("as", COLLABORATOR_INFO));
 		aggregateFilters.add(secondLookup);
 
 		// Projection.
 		Bson project = new Document("$project",
 				new Document(ID, 1).append(NAME, 1).append(DESCRIPTION, 1).append(OWNER_REF, 1).append(ACTIVE, 1)
-						.append(COLLABERATOR_REFS, 1).append(LAST_UPDATED, 1).append(OWNER_INFO + "." + EMAIL, 1)
-						.append(COLLABERATOR_INFO + "." + EMAIL, 1).append(COLLABERATOR_INFO + "." + ID, 1));
+						.append(COLLABORATOR_REFS, 1).append(LAST_UPDATED, 1).append(OWNER_INFO + "." + EMAIL, 1)
+						.append(COLLABORATOR_INFO + "." + EMAIL, 1).append(COLLABORATOR_INFO + "." + ID, 1));
 		aggregateFilters.add(project);
 
 		final AggregateIterable<Document> aggregate = projectsCollection.aggregate(aggregateFilters);
@@ -139,21 +138,21 @@ public class ProjectDAOMongo implements IProjectDAO {
 		newProject.setOwnerId(((ObjectId) doc.get(OWNER_REF)).toHexString());
 		newProject.setActive(doc.getBoolean(ACTIVE));
 		newProject.setLastUpdated(doc.getDate(LAST_UPDATED));
-		List<?> x = (ArrayList<?>) doc.get(COLLABERATOR_INFO);
-		List<ShortUserEntity> collaberatorss = new ArrayList<>();
+		List<?> x = (ArrayList<?>) doc.get(COLLABORATOR_INFO);
+		List<ShortUserEntity> collaboratorss = new ArrayList<>();
 		for (Object object : x) {
 			ShortUserEntity newShortUserEntity = new ShortUserEntity();
 			newShortUserEntity.setId(((Document) object).get(ID).toString());
 			newShortUserEntity.setEmail(((Document) object).getString(EMAIL));
-			collaberatorss.add(newShortUserEntity);
+			collaboratorss.add(newShortUserEntity);
 		}
-		newProject.setCollaberators(collaberatorss);
-		x = (ArrayList<?>) doc.get(COLLABERATOR_REFS);
-		List<String> collaberatorsId = new ArrayList<>();
+		newProject.setCollaborators(collaboratorss);
+		x = (ArrayList<?>) doc.get(COLLABORATOR_REFS);
+		List<String> collaboratorsId = new ArrayList<>();
 		for (Object object : x) {
-			collaberatorsId.add(((ObjectId) object).toHexString());
+			collaboratorsId.add(((ObjectId) object).toHexString());
 		}
-		newProject.setCollaberatorsId(collaberatorsId);
+		newProject.setCollaboratorsId(collaboratorsId);
 
 		return Optional.of(newProject);
 	}
@@ -193,10 +192,10 @@ public class ProjectDAOMongo implements IProjectDAO {
 		append.append(DESCRIPTION, updateValue.getDescription());
 		append.append(ACTIVE, updateValue.isActive());
 		BasicDBList newList = new BasicDBList();
-		for (String current : updateValue.getCollaberatorsId()) {
+		for (String current : updateValue.getCollaboratorsId()) {
 			newList.add(new ObjectId(current));
 		}
-		append.append(COLLABERATOR_REFS, newList);
+		append.append(COLLABORATOR_REFS, newList);
 
 		final BasicDBObject newDocument = new BasicDBObject();
 		newDocument.put("$set", append);
@@ -242,28 +241,28 @@ public class ProjectDAOMongo implements IProjectDAO {
 	}
 
 	@Override
-	public List<ProjectEntity> getAllProjectsByCollaberatorsId(String ownerId) {
-		return getAllProjectsById(ownerId, COLLABERATOR_REFS);
+	public List<ProjectEntity> getAllProjectsByCollaboratorsId(String ownerId) {
+		return getAllProjectsById(ownerId, COLLABORATOR_REFS);
 	}
 
 	@Override
-	public List<ProjectEntity> transfertAllProjects(String oldOwnerId, String newOwnerId) {
+	public List<ProjectEntity> transferAllProjects(String oldOwnerId, String newOwnerId) {
 		final List<ProjectEntity> allProjectsByOwnerId = this.getAllProjectsByOwnerId(oldOwnerId);
 
-		allProjectsByOwnerId.stream().forEach(project -> transfertProject(project, newOwnerId));
+		allProjectsByOwnerId.stream().forEach(project -> transferProject(project, newOwnerId));
 
 		return getAllProjectsByOwnerId(oldOwnerId);
 	}
 
 	// https://www.baeldung.com/java-streams-peek-api
 	@Override
-	public Optional<Long> removeCollaberator(String collaberatorId) {
-		List<ProjectEntity> allProjectsByCollaberatorsId = this.getAllProjectsByCollaberatorsId(collaberatorId);
+	public Optional<Long> removeCollaborator(String collaboratorId) {
+		List<ProjectEntity> allProjectsByCollaboratorsId = this.getAllProjectsByCollaboratorsId(collaboratorId);
 
-		long count = allProjectsByCollaberatorsId.stream().filter(project -> (!project.getCollaberatorsId().isEmpty()))
+		long count = allProjectsByCollaboratorsId.stream().filter(project -> (!project.getCollaboratorsId().isEmpty()))
 				.peek(project -> {
-					project.setCollaberatorsId(
-							this.removeCollaberatorUtil(collaberatorId, project.getCollaberatorsId()));
+					project.setCollaboratorsId(
+							this.removeCollaboratorUtil(collaboratorId, project.getCollaboratorsId()));
 					this.updateProject(project);
 				}).count();
 
@@ -271,12 +270,12 @@ public class ProjectDAOMongo implements IProjectDAO {
 	}
 
 	@Override
-	public List<ProjectEntity> transfertProjectsIfExistingCollaberators(String oldOwnerId, String newOwnerId) {
+	public List<ProjectEntity> transferProjectsIfExistingCollaborators(String oldOwnerId, String newOwnerId) {
 		final List<ProjectEntity> allProjectsByOwnerId = this.getAllProjectsByOwnerId(oldOwnerId);
 
 		allProjectsByOwnerId.stream().forEach(project -> {
-			if (!project.getCollaberatorsId().isEmpty()) {
-				transfertProject(project, newOwnerId);
+			if (!project.getCollaboratorsId().isEmpty()) {
+				transferProject(project, newOwnerId);
 			}
 		});
 
@@ -284,29 +283,29 @@ public class ProjectDAOMongo implements IProjectDAO {
 	}
 
 	@Override
-	public List<ProjectEntity> transfertProjectsIfNewOwnerIsCollaberator(String oldOwnerId, String newOwnerId) {
+	public List<ProjectEntity> transferProjectsIfNewOwnerIsCollaborator(String oldOwnerId, String newOwnerId) {
 		final List<ProjectEntity> allProjectsByOwnerId = this.getAllProjectsByOwnerId(oldOwnerId);
 
 		allProjectsByOwnerId.stream().forEach(project -> {
-			if (isCollaberatorPresent(newOwnerId, project.getCollaberatorsId())) {
-				transfertProject(project, newOwnerId);
+			if (isCollaboratorPresent(newOwnerId, project.getCollaboratorsId())) {
+				transferProject(project, newOwnerId);
 			}
 		});
 
 		return getAllProjectsByOwnerId(oldOwnerId);
 	}
 
-	protected List<String> removeCollaberatorUtil(String collaberatorId, List<String> collaboratorsId) {
-		return collaboratorsId.stream().filter(i -> !i.equals(collaberatorId)).collect(Collectors.toList());
+	protected List<String> removeCollaboratorUtil(String collaboratorId, List<String> collaboratorsId) {
+		return collaboratorsId.stream().filter(i -> !i.equals(collaboratorId)).collect(Collectors.toList());
 	}
 
-	protected boolean isCollaberatorPresent(String collaberatorId, List<String> collaboratorsId) {
-		return collaboratorsId.stream().anyMatch(i -> i.equals(collaberatorId));
+	protected boolean isCollaboratorPresent(String collaboratorId, List<String> collaboratorsId) {
+		return collaboratorsId.stream().anyMatch(i -> i.equals(collaboratorId));
 	}
 
-	private void transfertProject(ProjectEntity currentProject, String newOwnerId) {
+	private void transferProject(ProjectEntity currentProject, String newOwnerId) {
 		currentProject.setOwnerId(newOwnerId);
-		currentProject.setCollaberatorsId(this.removeCollaberatorUtil(newOwnerId, currentProject.getCollaberatorsId()));
+		currentProject.setCollaboratorsId(this.removeCollaboratorUtil(newOwnerId, currentProject.getCollaboratorsId()));
 		this.updateProject(currentProject);
 	}
 }

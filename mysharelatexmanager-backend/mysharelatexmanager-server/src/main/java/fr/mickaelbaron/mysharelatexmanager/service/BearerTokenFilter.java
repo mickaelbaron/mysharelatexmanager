@@ -3,22 +3,23 @@ package fr.mickaelbaron.mysharelatexmanager.service;
 import java.io.IOException;
 import java.util.Date;
 
-import javax.inject.Inject;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response.Status;
-
 import fr.mickaelbaron.mysharelatexmanager.AuthToken;
 import fr.mickaelbaron.mysharelatexmanager.MySharelatexManagerConstant;
 import fr.mickaelbaron.mysharelatexmanager.MySharelatexManagerUtil;
 import fr.mickaelbaron.mysharelatexmanager.api.TokenAuthenticated;
 import fr.mickaelbaron.mysharelatexmanager.cfg.IConfigExecution;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.Response.Status;
 
 /**
  * @author Mickael BARON (baron.mickael@gmail.com)
  */
+@RequestScoped
 @TokenAuthenticated
 public class BearerTokenFilter implements ContainerRequestFilter {
 

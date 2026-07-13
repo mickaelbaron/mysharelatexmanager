@@ -11,6 +11,8 @@ import DetailProjectDialog from './DetailProjectDialog.vue'
 import GlobalService from '../js/GlobalService.js'
 import CommonUtils from '../js/CommonUtils.js'
 
+import { DATE_FILTER, GLOBAL_FILTER, OBJECT_FILTER } from '../js/RegisterFilters.js'
+
 const allProjects = ref([])
 const expandedRows = ref([])
 
@@ -20,117 +22,66 @@ const props = defineProps({
   searchContent: {
     type: String,
     required: true,
-    default: ''
-  }
+  },
 })
+
+const createFilter = (matchMode) => ({
+  value: null,
+  matchMode,
+})
+
 const detailProjectDialogVisible = ref(false)
 const loading = ref(true)
-const globalFiler = ref('global filter')
-const objectFilter = ref('object filter')
-const dateFilter = ref('date filter')
 const globalFilter = ref({
-  global: { value: null, matchMode: globalFiler.value },
-  id: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-  name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-  owner: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-  active: { value: null, matchMode: FilterMatchMode.EQUALS },
-  collaberators: { value: null, matchMode: objectFilter.value },
-  lastUpdated: { value: null, matchMode: dateFilter.value }
+  global: createFilter(GLOBAL_FILTER),
+  id: createFilter(FilterMatchMode.STARTS_WITH),
+  name: createFilter(FilterMatchMode.STARTS_WITH),
+  owner: createFilter(FilterMatchMode.STARTS_WITH),
+  active: createFilter(FilterMatchMode.EQUALS),
+  collaborators: createFilter(OBJECT_FILTER),
+  lastUpdated: createFilter(DATE_FILTER),
 })
 
 const currentProjectIdEdit = ref('')
 
 onMounted(() => {
-  loading.value = true
   GlobalService.getProjects(onSuccessProjects, onErrorProjects)
-
-  FilterService.register(objectFilter.value, (value, filter) => {
-    if (filter === undefined || filter === null || filter.trim() === '') {
-      return true
-    }
-
-    if (value === undefined || value === null) {
-      return false
-    }
-
-    // Only Collaberators is an object type
-    if (typeof value === 'object') {
-      let result = value.find((element) => element.email.includes(filter))
-      return result !== undefined
-    }
-
-    return value.toString().includes(filter.toString())
-  })
-
-  FilterService.register(dateFilter.value, (value, filter) => {
-    if (filter === undefined || filter === null || filter.trim() === '') {
-      return true
-    }
-
-    if (value === undefined || value === null) {
-      return false
-    }
-
-    // Only Last Updated is an number type
-    if (typeof value === 'number') {
-      let result = CommonUtils.displayDate(value)
-
-      return result.toString().includes(filter.toString())
-    }
-
-    return value.toString().includes(filter.toString())
-  })
-
-  FilterService.register(globalFiler.value, (value, filter) => {
-    if (filter === undefined || filter === null || filter.trim() === '') {
-      return true
-    }
-
-    if (value === undefined || value === null) {
-      return false
-    }
-
-    // Only Collaberators is an object type
-    if (typeof value === 'object') {
-      let result = value.find((element) => element.email.includes(filter))
-      return result !== undefined
-    }
-
-    return value.toString().includes(filter.toString())
-  })
 })
 
-function openProjectDetailDialog(data) {
-  currentProjectIdEdit.value = data.id
+function openProjectDetailDialog(project) {
+  currentProjectIdEdit.value = project.id
   detailProjectDialogVisible.value = true
 }
 
-function onSuccessProjects(data) {
-  allProjects.value = data.data
+function finishLoading() {
   loading.value = false
+}
+
+function onSuccessProjects(project) {
+  allProjects.value = project.data
+  finishLoading()
 }
 
 function onErrorProjects(error) {
   errorState.methods.setErrorCode(error)
+  finishLoading()
 }
 
 function saveNewProjectData(data) {
   if (data) {
-    const objectToReplace = allProjects.value.find(
-      (currentUser) => currentUser.id === data.id
-    )
+    const project = allProjects.value.find((project) => project.id === data.id)
 
-    if (objectToReplace) {
-      Object.assign(objectToReplace, data)
+    if (project) {
+      Object.assign(project, data)
     }
   }
 }
 
 watch(
   () => props.searchContent,
-  (searchContent) => {
-    globalFilter.value.global.value = searchContent
-  }
+  (value) => {
+    globalFilter.value.global.value = value
+  },
 )
 </script>
 
@@ -152,7 +103,7 @@ watch(
     responsive-layout="scroll"
     current-page-report-template="Showing {first} to {last} of {totalRecords}"
     paginator-template="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
-    :global-filter-fields="['id', 'name', 'owner', 'collaberators']"
+    :global-filter-fields="['id', 'name', 'owner', 'collaborators']"
     :loading="loading"
   >
     <template #loading>Loading customers data. Please wait.</template>
@@ -166,7 +117,7 @@ watch(
           :placeholder="`Search by Id - ${filterModel.matchMode}`"
           aria-label="id"
           aria-describedby="basic-addon1"
-          @change="filterCallback()"
+          @change="filterCallback"
         />
       </template>
     </Column>
@@ -179,7 +130,7 @@ watch(
           :placeholder="`Search by Name - ${filterModel.matchMode}`"
           aria-label="name"
           aria-describedby="basic-addon1"
-          @change="filterCallback()"
+          @change="filterCallback"
         />
       </template>
     </Column>
@@ -192,16 +143,11 @@ watch(
           :placeholder="`Search by Owner - ${filterModel.matchMode}`"
           aria-label="Owner"
           aria-describedby="basic-addon1"
-          @change="filterCallback()"
+          @change="filterCallback"
         />
       </template>
     </Column>
-    <Column
-      field="active"
-      header="Active?"
-      data-type="boolean"
-      :sortable="true"
-    >
+    <Column field="active" header="Active?" data-type="boolean" :sortable="true">
       <template #body="slotProps">
         <span v-if="slotProps.data.active">
           <i class="bi bi-check" style="font-size: 1.5rem"></i
@@ -219,19 +165,14 @@ watch(
           v-model="filterModel.value"
           class="form-check-input"
           type="checkbox"
-          @change="filterCallback()"
+          @change="filterCallback"
         />
       </template>
     </Column>
-    <Column
-      field="collaberators"
-      header="Collaberators"
-      :show-filter-menu="false"
-      :sortable="true"
-    >
+    <Column field="collaborators" header="Collaborators" :show-filter-menu="false" :sortable="true">
       <template #body="slotProps">
         <ul>
-          <li v-for="current in slotProps.data.collaberators" :key="current.id">
+          <li v-for="current in slotProps.data.collaborators" :key="current.id">
             {{ current.email }}
           </li>
         </ul>
@@ -241,21 +182,16 @@ watch(
           v-model="filterModel.value"
           type="text"
           class="form-control"
-          placeholder="Search by Collaberators"
-          aria-label="Collaberators"
+          placeholder="Search by Collaborators"
+          aria-label="Collaborators"
           aria-describedby="basic-addon1"
-          @change="filterCallback()"
+          @change="filterCallback"
         />
       </template>
     </Column>
-    <Column
-      field="lastUpdated"
-      header="Last Updated"
-      :show-filter-menu="false"
-      :sortable="true"
-    >
+    <Column field="lastUpdated" header="Last Updated" :show-filter-menu="false" :sortable="true">
       <template #body="slotProps">{{
-        CommonUtils.displayDate(slotProps.data.lastUpdated)
+        CommonUtils.displayDate(slotProps.data.last_updated)
       }}</template>
       <template #filter="{ filterModel, filterCallback }">
         <input
@@ -265,7 +201,7 @@ watch(
           placeholder="YYYY/MM/D HH:mm:ss"
           aria-label="lastUpdated"
           aria-describedby="basic-addon1"
-          @change="filterCallback()"
+          @change="filterCallback"
         />
       </template>
     </Column>
@@ -275,19 +211,11 @@ watch(
           <button
             type="button"
             class="btn btn-outline-primary"
-            :title="'Edit the project ' + slotProps.data.name"
+            :title="`Edit the project ${slotProps.data.name}`"
             @click="openProjectDetailDialog(slotProps.data)"
           >
             <i class="bi bi-pencil"></i>
           </button>
-          <!--<button
-            type="button"
-            class="btn btn-outline-primary ms-2"
-            :title="'Delete the project ' + slotProps.data.name"
-            @click="openDeleteProjectDialog(slotProps.data)"
-          >
-            <i class="bi bi-trash"></i>
-          </button> -->
         </div>
       </template>
     </Column>

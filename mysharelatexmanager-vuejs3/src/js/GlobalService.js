@@ -2,7 +2,7 @@ const APP_SERVER_URL = import.meta.env.VITE_APP_SERVER_URL
 
 function getFakeUsers(onSuccess, onError) {
   let request = new Request('/users.json', {
-    method: 'GET'
+    method: 'GET',
   })
 
   globalFech(true, request, onSuccess, onError)
@@ -11,7 +11,7 @@ function getFakeUsers(onSuccess, onError) {
 function getFakeProjects(onSuccess, onError) {
   let request = new Request('/projects.json', {
     method: 'GET',
-    headers: getCommonHeaders()
+    headers: getCommonHeaders(),
   })
 
   globalFech(true, request, onSuccess, onError)
@@ -20,15 +20,17 @@ function getFakeProjects(onSuccess, onError) {
 function getCommonHeaders() {
   return {
     'Content-Type': 'application/json',
-    Authorization: localStorage.getItem('TOKEN')
+    Authorization: localStorage.getItem('TOKEN'),
   }
 }
 
 function updateUser(user, onSuccess, onError) {
+  console.log(JSON.stringify(user))
+
   let request = new Request(APP_SERVER_URL + '/users', {
     method: 'PUT',
     body: JSON.stringify(user),
-    headers: getCommonHeaders()
+    headers: getCommonHeaders(),
   })
 
   globalFech(false, request, onSuccess, onError)
@@ -37,7 +39,7 @@ function updateUser(user, onSuccess, onError) {
 function getProjects(onSuccess, onError) {
   let request = new Request(APP_SERVER_URL + '/projects', {
     method: 'GET',
-    headers: getCommonHeaders()
+    headers: getCommonHeaders(),
   })
 
   globalFech(true, request, onSuccess, onError)
@@ -46,28 +48,28 @@ function getProjects(onSuccess, onError) {
 function getUsers(onSuccess, onError) {
   let request = new Request(APP_SERVER_URL + '/users', {
     method: 'GET',
-    headers: getCommonHeaders()
+    headers: getCommonHeaders(),
   })
 
   globalFech(true, request, onSuccess, onError)
 }
 
-function prepareTransfertUserProjects(userId, onSuccess, onError) {
-  let request = new Request(APP_SERVER_URL + '/users/transfert/' + userId, {
+function prepareTransferUserProjects(userId, onSuccess, onError) {
+  let request = new Request(APP_SERVER_URL + '/users/transfer/' + userId, {
     method: 'GET',
     Authorization: localStorage.getItem('TOKEN'),
-    headers: getCommonHeaders()
+    headers: getCommonHeaders(),
   })
 
   globalFech(true, request, onSuccess, onError)
 }
 
-function transfertUserProjects(transfertUserProjects, onSuccess, onError) {
-  let request = new Request(APP_SERVER_URL + '/users/transfert', {
+function transferUserProjects(transferUserProjects, onSuccess, onError) {
+  let request = new Request(APP_SERVER_URL + '/users/transfer', {
     method: 'PUT',
-    body: JSON.stringify(transfertUserProjects),
+    body: JSON.stringify(transferUserProjects),
     Authorization: localStorage.getItem('TOKEN'),
-    headers: getCommonHeaders()
+    headers: getCommonHeaders(),
   })
 
   globalFech(true, request, onSuccess, onError)
@@ -78,17 +80,17 @@ function getAuthenticationLogin(credentials, onSuccess, onError) {
     method: 'POST',
     body: JSON.stringify(credentials),
     Authorization: localStorage.getItem('TOKEN'),
-    headers: getCommonHeaders()
+    headers: getCommonHeaders(),
   })
 
   globalFech(true, request, onSuccess, onError)
 }
 
-function removeCollaberator(userId, onSuccess, onError) {
-  let request = new Request(APP_SERVER_URL + '/users/collaberator/' + userId, {
+function removeCollaborator(userId, onSuccess, onError) {
+  let request = new Request(APP_SERVER_URL + '/users/collaborator/' + userId, {
     method: 'DELETE',
     Authorization: localStorage.getItem('TOKEN'),
-    headers: getCommonHeaders()
+    headers: getCommonHeaders(),
   })
 
   globalFech(true, request, onSuccess, onError)
@@ -98,7 +100,7 @@ function deleteUser(userId, onSuccess, onError) {
   let request = new Request(APP_SERVER_URL + '/users/' + userId, {
     method: 'DELETE',
     Authorization: localStorage.getItem('TOKEN'),
-    headers: getCommonHeaders()
+    headers: getCommonHeaders(),
   })
 
   globalFech(true, request, onSuccess, onError)
@@ -108,7 +110,7 @@ function prepareUpdateProject(projectId, onSuccess, onError) {
   let request = new Request(APP_SERVER_URL + '/projects/' + projectId, {
     method: 'GET',
     Authorization: localStorage.getItem('TOKEN'),
-    headers: getCommonHeaders()
+    headers: getCommonHeaders(),
   })
 
   globalFech(true, request, onSuccess, onError)
@@ -119,7 +121,7 @@ function updateProject(project, onSuccess, onError) {
     method: 'PUT',
     body: JSON.stringify(project),
     Authorization: localStorage.getItem('TOKEN'),
-    headers: getCommonHeaders()
+    headers: getCommonHeaders(),
   })
 
   globalFech(false, request, onSuccess, onError)
@@ -150,12 +152,12 @@ export default {
   getAuthenticationLogin,
   getProjects,
   getUsers,
-  prepareTransfertUserProjects,
+  prepareTransferUserProjects,
   prepareUpdateProject,
-  removeCollaberator,
-  transfertUserProjects,
+  removeCollaborator,
+  transferUserProjects,
   updateProject,
   updateUser,
   getFakeUsers,
-  getFakeProjects
+  getFakeProjects,
 }
