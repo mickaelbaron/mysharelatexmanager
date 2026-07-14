@@ -3,7 +3,7 @@ package fr.mickaelbaron.mysharelatexmanager.entity;
 import java.util.Date;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.json.bind.annotation.JsonbProperty;
 
 /**
  * @author Mickael BARON (baron.mickael@gmail.com)
@@ -22,9 +22,9 @@ public class ProjectEntity {
 
 	private Boolean isActive;
 
-	private List<String> collaberatorsId;
+	private List<String> collaboratorsId;
 
-	private List<ShortUserEntity> collaberators;
+	private List<ShortUserEntity> collaborators;
 	
 	private Date lastUpdated;
 
@@ -52,7 +52,7 @@ public class ProjectEntity {
 		this.name = name;
 	}
 
-	@JsonProperty("owner_ref")
+	@JsonbProperty("owner_ref")
 	public String getOwnerId() {
 		return ownerId;
 	}
@@ -69,7 +69,7 @@ public class ProjectEntity {
 		this.description = description;
 	}
 
-	@JsonProperty("active")
+	@JsonbProperty("active")
 	public Boolean isActive() {
 		return isActive;
 	}
@@ -78,20 +78,20 @@ public class ProjectEntity {
 		this.isActive = isActive;
 	}
 
-	@JsonProperty("collaberator_refs")
-	public List<String> getCollaberatorsId() {
-		return collaberatorsId;
+	@JsonbProperty("collaborator_refs")
+	public List<String> getCollaboratorsId() {
+		return collaboratorsId;
 	}
 
-	public void setCollaberatorsId(List<String> collaberatorsId) {
-		this.collaberatorsId = collaberatorsId;
+	public void setCollaboratorsId(List<String> collaboratorsId) {
+		this.collaboratorsId = collaboratorsId;
 	}
 
 	@Override
 	public String toString() {
 		return "ProjectEntity [id=" + id + ", ownerId=" + ownerId + ", owner=" + owner + ", name=" + name
 				+ ", description=" + description + ", isActive=" + isActive
-				+ ", collaberatorsId=" + collaberatorsId + ", collaberators=" + collaberators + ", lastUpdated="
+				+ ", collaboratorsId=" + collaboratorsId + ", collaborators=" + collaborators + ", lastUpdated="
 				+ lastUpdated + "]";
 	}
 
@@ -107,8 +107,8 @@ public class ProjectEntity {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((collaberatorsId == null) ? 0 : collaberatorsId.hashCode());
-		result = prime * result + ((collaberators == null) ? 0 : collaberators.hashCode());
+		result = prime * result + ((collaboratorsId == null) ? 0 : collaboratorsId.hashCode());
+		result = prime * result + ((collaborators == null) ? 0 : collaborators.hashCode());
 		result = prime * result + ((description == null) ? 0 : description.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((isActive == null) ? 0 : isActive.hashCode());
@@ -128,15 +128,15 @@ public class ProjectEntity {
 		if (getClass() != obj.getClass())
 			return false;
 		ProjectEntity other = (ProjectEntity) obj;
-		if (collaberatorsId == null) {
-			if (other.collaberatorsId != null)
+		if (collaboratorsId == null) {
+			if (other.collaboratorsId != null)
 				return false;
-		} else if (!collaberatorsId.equals(other.collaberatorsId))
+		} else if (!collaboratorsId.equals(other.collaboratorsId))
 			return false;
-		if (collaberators == null) {
-			if (other.collaberators != null)
+		if (collaborators == null) {
+			if (other.collaborators != null)
 				return false;
-		} else if (!collaberators.equals(other.collaberators))
+		} else if (!collaborators.equals(other.collaborators))
 			return false;
 		if (description == null) {
 			if (other.description != null)
@@ -176,11 +176,11 @@ public class ProjectEntity {
 		return true;
 	}
 
-	public List<ShortUserEntity> getCollaberators() {
-		return collaberators;
+	public List<ShortUserEntity> getCollaborators() {
+		return collaborators;
 	}
 
-	public void setCollaberators(List<ShortUserEntity> collaberators) {
-		this.collaberators = collaberators;
+	public void setCollaborators(List<ShortUserEntity> collaborators) {
+		this.collaborators = collaborators;
 	}
 }

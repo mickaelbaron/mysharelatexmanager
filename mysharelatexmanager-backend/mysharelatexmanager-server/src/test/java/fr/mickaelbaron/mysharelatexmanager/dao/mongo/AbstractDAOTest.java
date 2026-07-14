@@ -1,5 +1,7 @@
 package fr.mickaelbaron.mysharelatexmanager.dao.mongo;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -7,71 +9,52 @@ import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.naming.NamingException;
-
 import org.bson.Document;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
-import fr.mickaelbaron.mysharelatexmanager.AbstractCDIUnitTest;
+public class AbstractDAOTest {
 
-/**
- * @author Mickael BARON (baron.mickael@gmail.com)
- */
-public class AbstractDAOTest extends AbstractCDIUnitTest {
+    protected SessionMongoTest refSessionMongo;
 
-	@Inject
-	private IMongoSession currentSession;
+    public void setUp() throws Exception {
+        this.refSessionMongo = new SessionMongoTest();
+        final MongoDatabase database = refSessionMongo.getMongoClient().getDatabase("sharelatex");
 
-	@Before
-	public void setUp() throws Exception {
-		final MongoDatabase database = currentSession.getMongoClient().getDatabase("sharelatex");
+        final MongoCollection<Document> usersCollection = database.getCollection("users");
+        usersCollection.insertMany(createDocuments("userssample.json"));
 
-		final MongoCollection<Document> usersCollection = database.getCollection("users");
-		usersCollection.insertMany(createDocuments("userssample.json"));
+        final MongoCollection<Document> projectsCollection = database.getCollection("projects");
+        projectsCollection.insertMany(createDocuments("projectssample.json"));
+    }
 
-		final MongoCollection<Document> projectsCollection = database.getCollection("projects");
-		projectsCollection.insertMany(createDocuments("projectssample.json"));
-	}
+    private List<Document> createDocuments(String filename) {
+        final List<String> extractLinesFromFile = extractLinesFromFile(filename);
 
-	@After
-	public void tearDown() throws NamingException {
-		super.tearDown();
-		
-		((SessionMongoTest) currentSession).stopContainer();
-	}
+        List<Document> usersDocuments = new ArrayList<Document>();
+        for (String string : extractLinesFromFile) {
+            usersDocuments.add(Document.parse(string));
+        }
 
-	private List<Document> createDocuments(String filename) {
-		final List<String> extractLinesFromFile = extractLinesFromFile(filename);
+        return usersDocuments;
+    }
 
-		List<Document> usersDocuments = new ArrayList<Document>();
-		for (String string : extractLinesFromFile) {
-			usersDocuments.add(Document.parse(string));
-		}
+    private List<String> extractLinesFromFile(String filename) {
+        List<String> lines = new ArrayList<String>();
+        InputStream resourceAsStream = getClass().getResourceAsStream("/" + filename);
+        final InputStreamReader reader = new InputStreamReader(resourceAsStream);
 
-		return usersDocuments;
-	}
+        LineNumberReader lineReader = new LineNumberReader(reader);
+        String line = null;
+        try {
+            while ((line = lineReader.readLine()) != null) {
+                lines.add(line);
+            }
+        } catch (IOException e) {
+            fail("Can't load data from file");
+        }
 
-	private List<String> extractLinesFromFile(String filename) {
-		List<String> lines = new ArrayList<String>();
-		InputStream resourceAsStream = getClass().getResourceAsStream("/" + filename);
-		final InputStreamReader reader = new InputStreamReader(resourceAsStream);
-
-		LineNumberReader lineReader = new LineNumberReader(reader);
-		String line = null;
-		try {
-			while ((line = lineReader.readLine()) != null) {
-				lines.add(line);
-			}
-		} catch (IOException e) {
-			Assert.fail("Can't load data from file");
-		}
-
-		return lines;
-	}
+        return lines;
+    }
 }

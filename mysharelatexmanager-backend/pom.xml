@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>fr.mickaelbaron</groupId>
 	<artifactId>mysharelatexmanager-backend</artifactId>
@@ -13,9 +15,11 @@
 	</modules>
 
 	<properties>
+		<jakarta.platform.version>10.0.0</jakarta.platform.version>
+		<microprofile.version>7.0</microprofile.version>
+
 		<!-- Mongodb Driver: https://mvnrepository.com/artifact/org.mongodb/mongodb-driver -->
-		<!-- <mongodb.version>3.12.12</mongodb.version> -->
-		<mongodb.version>4.9.0</mongodb.version>
+		<mongodb.version>5.8.0</mongodb.version>
 
 		<!-- jbcrypt -->
 		<jbcrypt.version>0.4</jbcrypt.version>
@@ -33,84 +37,26 @@
 		<!-- Maven Dependency Plugin -->
 		<maven.dependency.version>3.5.0</maven.dependency.version>
 
-		<!-- MicroProfile implementation => MicroProfile 2.1 -->
-		<kumuluzee.version>4.1.0</kumuluzee.version>
-
-		<!-- MicroProfile Config -->
-		<microprofile-config.version>1.3.0</microprofile-config.version>
-		<kumuluzee-logs.version>1.4.6</kumuluzee-logs.version>
-
 		<!-- Log -->
-		<sl4j.version>2.0.0-alpha6</sl4j.version>
-
-		<!-- Test -->
-		<cdi-unit.version>4.1.0</cdi-unit.version>
-		<junit.version>4.13.1</junit.version>
-		<mockito.version>5.2.0</mockito.version>
-		<weld.version>3.1.1.Final</weld.version>
-		<testcontainers.version>1.17.6</testcontainers.version>
+		<sl4j.version>2.0.18</sl4j.version>
 	</properties>
 
-	<build>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<version>${maven.compiler.version}</version>
-					<configuration>
-						<source>${maven.compiler.source}</source>
-						<target>${maven.compiler.target}</target>
-						<encoding>${project.build.sourceEncoding}</encoding>
-					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-surefire-plugin</artifactId>
-					<version>${maven.surefire.version}</version>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-dependency-plugin</artifactId>
-					<version>${maven.dependency.version}</version>
-					<executions>
-						<execution>
-							<id>copy-dependencies</id>
-							<phase>package</phase>
-							<goals>
-								<goal>copy-dependencies</goal>
-							</goals>
-							<configuration>
-								<includeScope>runtime</includeScope>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
 
 	<dependencyManagement>
 		<dependencies>
-			<!-- KumuluzEE -->
 			<dependency>
-				<groupId>com.kumuluz.ee</groupId>
-				<artifactId>kumuluzee-bom</artifactId>
-				<version>${kumuluzee.version}</version>
+				<groupId>jakarta.platform</groupId>
+				<artifactId>jakarta.jakartaee-bom</artifactId>
+				<version>${jakarta.platform.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-
 			<dependency>
-				<groupId>com.kumuluz.ee.config</groupId>
-				<artifactId>kumuluzee-config-mp</artifactId>
-				<version>${microprofile-config.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>com.kumuluz.ee.logs</groupId>
-				<artifactId>kumuluzee-logs-log4j2</artifactId>
-				<version>${kumuluzee-logs.version}</version>
+				<groupId>org.eclipse.microprofile</groupId>
+				<artifactId>microprofile</artifactId>
+				<version>${microprofile.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 
 			<dependency>
@@ -120,7 +66,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-log4j12</artifactId>
+				<artifactId>slf4j-simple</artifactId>
 				<version>${sl4j.version}</version>
 			</dependency>
 
@@ -140,42 +86,6 @@
 				<groupId>org.jasypt</groupId>
 				<artifactId>jasypt</artifactId>
 				<version>${jasypt.version}</version>
-			</dependency>
-
-			<!-- Test -->
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>${junit.version}</version>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.jglue.cdi-unit</groupId>
-				<artifactId>cdi-unit</artifactId>
-				<version>${cdi-unit.version}</version>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.mockito</groupId>
-				<artifactId>mockito-core</artifactId>
-				<version>${mockito.version}</version>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.jboss.weld.se</groupId>
-				<artifactId>weld-se-core</artifactId>
-				<version>${weld.version}</version>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.testcontainers</groupId>
-				<artifactId>testcontainers</artifactId>
-				<version>${testcontainers.version}</version>
-				<scope>test</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

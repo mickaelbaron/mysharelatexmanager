@@ -8,11 +8,12 @@ import Column from 'primevue/column'
 import DetailUserRow from './DetailUserRow.vue'
 import DetailUserDialog from './DetailUserDialog.vue'
 import DeleteUserDialog from './DeleteUserDialog.vue'
-import TransfertOwnerProjectsDialog from './TransfertOwnerProjectsDialog.vue'
-import RemoveCollaboratorDialog from './RemoveCollaberatorDialog.vue'
+import TransferOwnerProjectsDialog from './TransferOwnerProjectsDialog.vue'
+import RemoveCollaboratorDialog from './RemoveCollaboratorDialog.vue'
 
 import GlobalService from '../js/GlobalService.js'
 import CommonUtils from '../js/CommonUtils.js'
+import { DATE_FILTER } from '../js/RegisterFilters.js'
 
 const errorState = inject('ErrorState')
 
@@ -20,18 +21,20 @@ const props = defineProps({
   searchContent: {
     type: String,
     required: true,
-    default: ''
-  }
+  },
 })
 
 const allUsers = ref([])
-const detailUserDialogVisible = ref(false)
-const deleteUserDialogVisible = ref(false)
-const transfertOwnerProjectsDialogVisible = ref(false)
-const removeCollaberatorDialogVisible = ref(false)
+
 const loading = ref(true)
 const expandedRows = ref([])
-const dateFilter = ref('date filter')
+
+const dialogs = reactive({
+  detail: false,
+  delete: false,
+  transfer: false,
+  remove: false,
+})
 
 const currentUserEdit = reactive({
   id: '',
@@ -39,20 +42,25 @@ const currentUserEdit = reactive({
   last_name: '',
   institution: '',
   email: '',
-  loginCount: '',
-  lastLoggedIn: '',
-  hashedPassword: '',
-  isAdmin: true
+  login_count: '',
+  last_logged_in: '',
+  hashed_password: '',
+  admin: true,
+})
+
+const createFilter = (matchMode) => ({
+  value: null,
+  matchMode,
 })
 
 const globalFilter = ref({
-  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  id: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-  first_name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-  last_name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-  email: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-  loginCount: { value: null, matchMode: FilterMatchMode.EQUALS },
-  lastLoggedIn: { value: null, matchMode: FilterMatchMode.STARTS_WITH }
+  global: createFilter(FilterMatchMode.CONTAINS),
+  id: createFilter(FilterMatchMode.STARTS_WITH),
+  first_name: createFilter(FilterMatchMode.STARTS_WITH),
+  last_name: createFilter(FilterMatchMode.STARTS_WITH),
+  email: createFilter(FilterMatchMode.STARTS_WITH),
+  login_count: createFilter(FilterMatchMode.EQUALS),
+  last_logged_in: createFilter(DATE_FILTER),
 })
 
 function onSuccessUsers(data) {
@@ -68,38 +76,17 @@ watch(
   () => props.searchContent,
   (searchContent) => {
     globalFilter.value.global.value = searchContent
-  }
+  },
 )
 
 onMounted(() => {
   loading.value = true
   GlobalService.getUsers(onSuccessUsers, onErrorUsers)
-
-  FilterService.register(dateFilter.value, (value, filter) => {
-    if (filter === undefined || filter === null || filter.trim() === '') {
-      return true
-    }
-
-    if (value === undefined || value === null) {
-      return false
-    }
-
-    // Only Last Updated is an number type
-    if (typeof value === 'number') {
-      let result = CommonUtils.displayDate(value)
-
-      return result.toString().includes(filter.toString())
-    }
-
-    return value.toString().includes(filter.toString())
-  })
 })
 
 function saveNewUserData(data) {
   if (data) {
-    const objectToReplace = allUsers.value.find(
-      (currentUser) => currentUser.id === data.id
-    )
+    const objectToReplace = allUsers.value.find((currentUser) => currentUser.id === data.id)
 
     if (objectToReplace) {
       Object.assign(objectToReplace, data)
@@ -107,59 +94,28 @@ function saveNewUserData(data) {
   }
 }
 
-function selectCurrentUserEdit(data) {
-  currentUserEdit.id = data.id
-  currentUserEdit.first_name = data.first_name
-  currentUserEdit.last_name = data.last_name
-  currentUserEdit.institution = data.institution
-  currentUserEdit.email = data.email
-  currentUserEdit.loginCount = data.loginCount
-  currentUserEdit.lastLoggedIn = data.lastLoggedIn
-  currentUserEdit.isAdmin = data.isAdmin
+function selectCurrentUserEdit(user) {
+  Object.assign(currentUserEdit, user)
 }
 
-function openRemoveCollaberatorDialog(data) {
-  selectCurrentUserEdit(data)
-  removeCollaberatorDialogVisible.value = true
-}
-
-function openTransfertOwnerProjectsDialog(data) {
-  selectCurrentUserEdit(data)
-  transfertOwnerProjectsDialogVisible.value = true
-}
-
-/*function openDeleteUserDialog(data) {
-  selectCurrentUserEdit(data)
-  deleteUserDialogVisible.value = true
-}*/
-
-function openUserDetailDialog(data) {
-  selectCurrentUserEdit(data)
-  detailUserDialogVisible.value = true
+function openDialog(user, dialogName) {
+  selectCurrentUserEdit(user)
+  dialogs[dialogName] = true
 }
 </script>
 
 <template>
-  <RemoveCollaboratorDialog
-    v-model:visible="removeCollaberatorDialogVisible"
-    :user="currentUserEdit"
-  />
+  <RemoveCollaboratorDialog v-model:visible="dialogs.remove" :user="currentUserEdit" />
 
-  <DeleteUserDialog
-    v-model:visible="deleteUserDialogVisible"
-    :user="currentUserEdit"
-  />
+  <DeleteUserDialog v-model:visible="dialogs.delete" :user="currentUserEdit" />
 
   <DetailUserDialog
-    v-model:visible="detailUserDialogVisible"
+    v-model:visible="dialogs.detail"
     :user="currentUserEdit"
     @save-new-userdata="saveNewUserData"
   />
 
-  <TransfertOwnerProjectsDialog
-    v-model:visible="transfertOwnerProjectsDialogVisible"
-    :user="currentUserEdit"
-  />
+  <TransferOwnerProjectsDialog v-model:visible="dialogs.transfer" :user="currentUserEdit" />
 
   <DataTable
     v-model:expandedRows="expandedRows"
@@ -229,12 +185,7 @@ function openUserDetailDialog(data) {
         />
       </template>
     </Column>
-    <Column
-      field="loginCount"
-      header="Login Count"
-      data-type="numeric"
-      :sortable="true"
-    >
+    <Column field="login_count" header="Login Count" data-type="numeric" :sortable="true">
       <template #filter="{ filterModel, filterCallback }">
         <input
           v-model="filterModel.value"
@@ -248,12 +199,12 @@ function openUserDetailDialog(data) {
       </template>
     </Column>
     <Column
-      field="lastLoggedIn"
+      field="last_logged_in"
       header="Last Logged In"
       :sortable="true"
       :show-filter-menu="false"
       ><template #body="slotProps">{{
-        CommonUtils.displayDate(slotProps.data.lastLoggedIn)
+        CommonUtils.displayDate(slotProps.data.last_logged_in)
       }}</template>
       <template #filter="{ filterModel, filterCallback }">
         <input
@@ -274,31 +225,23 @@ function openUserDetailDialog(data) {
             type="button"
             class="btn btn-outline-primary"
             :title="'Edit the content of ' + slotProps.data.email"
-            @click="openUserDetailDialog(slotProps.data)"
+            @click="openDialog(slotProps.data, 'detail')"
           >
             <i class="bi bi-pencil"></i>
           </button>
           <button
             type="button"
             class="btn btn-outline-primary ms-2"
-            :title="
-              'Transfert the projects of ' +
-              slotProps.data.email +
-              ' to another user'
-            "
-            @click="openTransfertOwnerProjectsDialog(slotProps.data)"
+            :title="'Transfer the projects of ' + slotProps.data.email + ' to another user'"
+            @click="openDialog(slotProps.data, 'transfer')"
           >
             <i class="bi bi-shuffle"></i>
           </button>
           <button
             type="button"
             class="btn btn-outline-danger ms-2"
-            :title="
-              'Remove collaberator (' +
-              slotProps.data.email +
-              ') of all projects'
-            "
-            @click="openRemoveCollaberatorDialog(slotProps.data)"
+            :title="'Remove collaborator (' + slotProps.data.email + ') of all projects'"
+            @click="openDialog(slotProps.data, 'remove')"
           >
             <i class="bi bi-person-fill-dash"></i>
           </button>

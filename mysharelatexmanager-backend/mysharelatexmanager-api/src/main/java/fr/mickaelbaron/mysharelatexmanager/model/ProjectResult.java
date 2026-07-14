@@ -2,13 +2,13 @@ package fr.mickaelbaron.mysharelatexmanager.model;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import jakarta.json.bind.annotation.JsonbNillable;
+import jakarta.json.bind.annotation.JsonbProperty;
 
 /**
  * @author Mickael BARON (baron.mickael@gmail.com)
  */
-@JsonInclude(Include.NON_NULL)
+@JsonbNillable(false)
 public class ProjectResult extends AbstractResult {
 
 	private List<Project> data;
@@ -16,10 +16,11 @@ public class ProjectResult extends AbstractResult {
 	/**
 	 * Used before and after update.
 	 */
+	@JsonbProperty("update_project")
 	private Project updateProject;
 
 	/**
-	 * All users to help for choosing owner and collaberators.
+	 * All users to help for choosing owner and collaborators.
 	 */
 	private List<User> users;
 

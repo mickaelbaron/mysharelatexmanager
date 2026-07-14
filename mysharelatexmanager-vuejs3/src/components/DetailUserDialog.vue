@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, inject } from 'vue'
+import { ref, reactive, onMounted, computed, onBeforeUnmount, watch, inject, toRaw } from 'vue'
 import CommonUtils from '../js/CommonUtils.js'
 import { Modal } from 'bootstrap'
 import GlobalService from '../js/GlobalService.js'
@@ -10,19 +10,31 @@ const props = defineProps({
   visible: {
     type: Boolean,
     required: true,
-    default: false
   },
   user: {
     type: Object,
     required: true,
-    default: () => ({})
-  }
+  },
 })
-const emit = defineEmits(['update:visible', 'save-new-userdata'])
+
+const emit = defineEmits({
+  'update:visible': null,
+  'save-new-userdata': null,
+})
 
 const modalRef = ref()
 let modal = null
-let newUser = {}
+const newUser = reactive({
+  id: null,
+  first_name: '',
+  last_name: '',
+  institution: '',
+  email: '',
+  hashed_password: '',
+  login_count: 0,
+  last_logged_in: null,
+  admin: false,
+})
 
 onMounted(() => {
   if (modalRef.value) {
@@ -31,16 +43,26 @@ onMounted(() => {
   }
 })
 
+onBeforeUnmount(() => {
+  modalRef.value?.removeEventListener('hidden.bs.modal', close)
+  modal?.dispose()
+})
+
+const formattedLastLogin = computed(() => CommonUtils.displayDate(newUser.last_logged_in))
+
 watch(
   () => props.visible,
   (visible) => {
-    if (visible) {
-      newUser = { ...props.user }
-      modal.show()
-    } else {
+    if (!modal) return
+
+    if (!visible) {
       modal.hide()
+      return
     }
-  }
+
+    Object.assign(newUser, structuredClone(toRaw(props.user)))
+    modal.show()
+  },
 )
 
 function onSuccessUpdateUser(data) {
@@ -69,25 +91,21 @@ function close() {
 <template>
   <div ref="modalRef" class="modal fade" tabindex="-1">
     <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">User Edition</h5>
-          <button
-            type="button"
-            class="btn-close"
-            aria-label="Close"
-            @click="close()"
-          ></button>
-        </div>
-        <div class="modal-body">
-          <form>
+      <form @submit.prevent="applyUpdateUser">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">User Edition</h5>
+            <button type="button" class="btn-close" aria-label="Close" @click="close()"></button>
+          </div>
+          <div class="modal-body">
             <div class="mb-3">
               <label for="inputId" class="form-label">Id</label>
               <input
                 id="inputId"
-                :value="newUser.id"
+                v-model="newUser.id"
                 type="text"
                 placeholder="Id"
+                readonly
                 disabled
                 class="form-control"
               />
@@ -100,7 +118,6 @@ function close() {
                 type="text"
                 class="form-control"
                 placeholder="First name"
-                @keydown.enter="applyUpdateUser"
               />
             </div>
             <div class="mb-3">
@@ -111,20 +128,16 @@ function close() {
                 type="text"
                 class="form-control"
                 placeholder="Last name"
-                @keydown.enter="applyUpdateUser"
               />
             </div>
             <div class="mb-3">
-              <label for="inputInstitution" class="form-label"
-                >Institution</label
-              >
+              <label for="inputInstitution" class="form-label">Institution</label>
               <input
                 id="inputInstitution"
                 v-model="newUser.institution"
                 type="text"
                 class="form-control"
                 placeholder="Institution"
-                @keydown.enter="applyUpdateUser"
               />
             </div>
             <div class="mb-3">
@@ -135,27 +148,24 @@ function close() {
                 type="email"
                 class="form-control"
                 placeholder="user@domain.fr"
-                @keydown.enter="applyUpdateUser"
               />
             </div>
             <div class="mb-5">
               <label for="inputPassword" class="form-label">Password</label>
               <input
                 id="inputPassword"
-                v-model="newUser.hashedPassword"
+                v-model="newUser.hashed_password"
                 placeholder="If empty password, it will be not changed."
                 type="password"
                 class="form-control"
-                @keydown.enter="applyUpdateUser"
               />
             </div>
             <div class="mb-3">
-              <label for="inputLoginCount" class="form-label"
-                >Login Count</label
-              >
+              <label for="inputLoginCount" class="form-label">Login Count</label>
               <input
                 id="inputLoginCount"
-                :value="newUser.loginCount"
+                v-model="newUser.login_count"
+                readonly
                 disabled
                 type="text"
                 class="form-control"
@@ -163,12 +173,11 @@ function close() {
               />
             </div>
             <div class="mb-5">
-              <label for="inputLastLoggedIn" class="col-form-label"
-                >Last Logged In</label
-              >
+              <label for="inputLastLoggedIn" class="col-form-label">Last Logged In</label>
               <input
                 id="inputLastLoggedIn"
-                :value="CommonUtils.displayDate(newUser.lastLoggedIn)"
+                :value="formattedLastLogin"
+                readonly
                 disabled
                 type="text"
                 class="form-control"
@@ -179,30 +188,22 @@ function close() {
               <div class="form-check">
                 <input
                   id="checkIsAdmin"
-                  v-model="newUser.isAdmin"
+                  v-model="newUser.admin"
                   class="form-check-input"
                   type="checkbox"
                 />
-                <label class="form-check-label" for="checkIsAdmin">
-                  Is admin ?
-                </label>
+                <label class="form-check-label" for="checkIsAdmin"> Administrator </label>
               </div>
             </div>
-          </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="close()">Close</button>
+            <button type="submit" class="btn btn-primary" @click="applyUpdateUser()">
+              Save changes
+            </button>
+          </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" @click="close()">
-            Close
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="applyUpdateUser()"
-          >
-            Save changes
-          </button>
-        </div>
-      </div>
+      </form>
     </div>
   </div>
 </template>

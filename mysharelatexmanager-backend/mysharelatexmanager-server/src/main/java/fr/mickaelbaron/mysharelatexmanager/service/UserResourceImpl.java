@@ -5,11 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import javax.inject.Inject;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
 import fr.mickaelbaron.mysharelatexmanager.MySharelatexManagerConstant;
 import fr.mickaelbaron.mysharelatexmanager.MySharelatexManagerUtil;
 import fr.mickaelbaron.mysharelatexmanager.api.UserResource;
@@ -20,13 +15,19 @@ import fr.mickaelbaron.mysharelatexmanager.entity.EntityFactory;
 import fr.mickaelbaron.mysharelatexmanager.entity.ProjectEntity;
 import fr.mickaelbaron.mysharelatexmanager.entity.UserEntity;
 import fr.mickaelbaron.mysharelatexmanager.model.Project;
-import fr.mickaelbaron.mysharelatexmanager.model.TransfertUserProjects;
+import fr.mickaelbaron.mysharelatexmanager.model.TransferUserProjects;
 import fr.mickaelbaron.mysharelatexmanager.model.User;
 import fr.mickaelbaron.mysharelatexmanager.model.UserResult;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
 /**
  * @author Mickael BARON (baron.mickael@gmail.com)
  */
+@RequestScoped
 public class UserResourceImpl implements UserResource {
 
 	@Inject
@@ -109,13 +110,13 @@ public class UserResourceImpl implements UserResource {
 
 		final List<Project> allProjectsByOwnerId = EntityFactory
 				.createProjects(this.refProjectDAO.getAllProjectsByOwnerId(id));
-		newResult.setOwnerProject(allProjectsByOwnerId);
+		newResult.setOwnedProjects(allProjectsByOwnerId);
 
-		final List<Project> allProjectsByCollaberatorsId = EntityFactory
-				.createProjects(this.refProjectDAO.getAllProjectsByCollaberatorsId(id));
-		newResult.setCollaberatorsProject(allProjectsByCollaberatorsId);
+		final List<Project> allProjectsByCollaboratorsId = EntityFactory
+				.createProjects(this.refProjectDAO.getAllProjectsByCollaboratorsId(id));
+		newResult.setCollaboratorsProject(allProjectsByCollaboratorsId);
 
-		if (allProjectsByCollaberatorsId.isEmpty() && allProjectsByOwnerId.isEmpty()) {
+		if (allProjectsByCollaboratorsId.isEmpty() && allProjectsByOwnerId.isEmpty()) {
 			final boolean deleteUser = this.refUserDAO.deleteUser(id);
 
 			if (deleteUser) {
@@ -124,81 +125,81 @@ public class UserResourceImpl implements UserResource {
 				throw new WebApplicationException("Cannot delete user: " + id, Status.NOT_FOUND);
 			}
 		} else {
-			newResult.setOwnerProject(allProjectsByOwnerId);
-			newResult.setCollaberatorsProject(allProjectsByCollaberatorsId);
+			newResult.setOwnedProjects(allProjectsByOwnerId);
+			newResult.setCollaboratorsProject(allProjectsByCollaboratorsId);
 			return newResult;
 		}
 	}
 
 	@Override
-	public UserResult transfertUserProjects(TransfertUserProjects transfertUserProjects) {
-		if (null == transfertUserProjects) {
+	public UserResult transferUserProjects(TransferUserProjects transferUserProjects) {
+		if (null == transferUserProjects) {
 			throw new WebApplicationException(MySharelatexManagerConstant.PARAMETER_IS_MISSING_MSG, Status.BAD_REQUEST);
 		}
 
-		if (transfertUserProjects.getMode() == null) {
+		if (transferUserProjects.getMode() == null) {
 			throw new WebApplicationException("Parameter is missing: mode", Status.BAD_REQUEST);
 		}
 
-		if (transfertUserProjects.getCurrentOwnerId() != null && !transfertUserProjects.getCurrentOwnerId().isEmpty()) {
+		if (transferUserProjects.getCurrentOwnerId() != null && !transferUserProjects.getCurrentOwnerId().isEmpty()) {
 			final Optional<UserEntity> userById = this.refUserDAO
-					.getUserById(transfertUserProjects.getCurrentOwnerId());
+					.getUserById(transferUserProjects.getCurrentOwnerId());
 
 			if (!userById.isPresent()) {
 				throw new WebApplicationException(
-						"User not found: currentOwnerId (" + transfertUserProjects.getCurrentOwnerId() + ")",
+						"User not found: currentOwnerId (" + transferUserProjects.getCurrentOwnerId() + ")",
 						Status.NOT_FOUND);
 			}
 		} else {
 			throw new WebApplicationException("Parameter is missing: currentOwnerId", Status.BAD_REQUEST);
 		}
 
-		if (transfertUserProjects.getNewOwnerId() != null && !transfertUserProjects.getNewOwnerId().isEmpty()) {
-			final Optional<UserEntity> userById = this.refUserDAO.getUserById(transfertUserProjects.getNewOwnerId());
+		if (transferUserProjects.getNewOwnerId() != null && !transferUserProjects.getNewOwnerId().isEmpty()) {
+			final Optional<UserEntity> userById = this.refUserDAO.getUserById(transferUserProjects.getNewOwnerId());
 
 			if (!userById.isPresent()) {
 				throw new WebApplicationException(
-						"User not found: newOwnerId (" + transfertUserProjects.getNewOwnerId() + ")", Status.NOT_FOUND);
+						"User not found: newOwnerId (" + transferUserProjects.getNewOwnerId() + ")", Status.NOT_FOUND);
 			}
 		} else {
 			throw new WebApplicationException("Parameter is missing: newOwnerId", Status.BAD_REQUEST);
 		}
 
-		if (transfertUserProjects.getCurrentOwnerId().equals(transfertUserProjects.getNewOwnerId())) {
+		if (transferUserProjects.getCurrentOwnerId().equals(transferUserProjects.getNewOwnerId())) {
 			throw new WebApplicationException("OwnerId references must be different", Status.BAD_REQUEST);
 		}
+		
+		List<ProjectEntity> transferAllProjects = null;
+		switch (transferUserProjects.getMode()) {
+			// Transfer all projects without any condition
+			case ALL: {
+				transferAllProjects = this.refProjectDAO.transferAllProjects(transferUserProjects.getCurrentOwnerId(),
+						transferUserProjects.getNewOwnerId());
 
-		List<ProjectEntity> transfertAllProjects = null;
-		switch (transfertUserProjects.getMode()) {
-		// Transfert all projects without any condition
-		case ALL: {
-			transfertAllProjects = this.refProjectDAO.transfertAllProjects(transfertUserProjects.getCurrentOwnerId(),
-					transfertUserProjects.getNewOwnerId());
+				break;
+			}
+			// Transfer all projects if the projects are shared.
+			case FORCED: {
+				transferAllProjects = this.refProjectDAO.transferProjectsIfExistingCollaborators(
+						transferUserProjects.getCurrentOwnerId(), transferUserProjects.getNewOwnerId());
 
-			break;
-		}
-		// Transfert all projects if the projects are shared.
-		case FORCED: {
-			transfertAllProjects = this.refProjectDAO.transfertProjectsIfExistingCollaberators(
-					transfertUserProjects.getCurrentOwnerId(), transfertUserProjects.getNewOwnerId());
-
-			break;
-		}
-		// Transfert all projects to the New Owner if this one is a collaberator.
-		case NORMAL:
-		default: {
-			transfertAllProjects = this.refProjectDAO.transfertProjectsIfNewOwnerIsCollaberator(
-					transfertUserProjects.getCurrentOwnerId(), transfertUserProjects.getNewOwnerId());
-		}
+				break;
+			}
+			// Transfer all projects to the New Owner if this one is a collaborator.
+			case NORMAL:
+			default: {
+				transferAllProjects = this.refProjectDAO.transferProjectsIfNewOwnerIsCollaborator(
+						transferUserProjects.getCurrentOwnerId(), transferUserProjects.getNewOwnerId());
+			}
 		}
 
 		UserResult userResult = new UserResult();
-		userResult.setOwnerProject(EntityFactory.createProjects(transfertAllProjects));
+		userResult.setOwnedProjects(EntityFactory.createProjects(transferAllProjects));
 		return userResult;
 	}
 
 	@Override
-	public UserResult prepareTransfertUserProjects(String id) {
+	public UserResult prepareTransferUserProjects(String id) {
 		if (null == id) {
 			throw new WebApplicationException(MySharelatexManagerConstant.PARAMETER_IS_MISSING_MSG, Status.BAD_REQUEST);
 		}
@@ -208,9 +209,9 @@ public class UserResourceImpl implements UserResource {
 		// Retrieve projects from its owner id.
 		final List<ProjectEntity> allProjectsByOwnerId = this.refProjectDAO.getAllProjectsByOwnerId(id);
 		if (allProjectsByOwnerId != null && !allProjectsByOwnerId.isEmpty()) {
-			newProjectResult.setOwnerProject(EntityFactory.createProjects(allProjectsByOwnerId));
+			newProjectResult.setOwnedProjects(EntityFactory.createProjects(allProjectsByOwnerId));
 		} else {
-			newProjectResult.setOwnerProject(new ArrayList<Project>());
+			newProjectResult.setOwnedProjects(new ArrayList<Project>());
 		}
 
 		// Retrieve all users.
@@ -223,7 +224,7 @@ public class UserResourceImpl implements UserResource {
 	}
 
 	@Override
-	public UserResult removeCollaberator(String id) {
+	public UserResult removeCollaborator(String id) {
 		if (null == id) {
 			throw new WebApplicationException(MySharelatexManagerConstant.PARAMETER_IS_MISSING_MSG, Status.BAD_REQUEST);
 		}
@@ -235,10 +236,10 @@ public class UserResourceImpl implements UserResource {
 			throw new WebApplicationException("User not found.", Status.NOT_FOUND);
 		}
 
-		Optional<Long> removeCollaberator = refProjectDAO.removeCollaberator(id);
+		Optional<Long> removeCollaborator = refProjectDAO.removeCollaborator(id);
 
-		if (removeCollaberator.isPresent()) {
-			newProjectResult.setRemovedCollaberatorProjectsNumber(removeCollaberator.get());
+		if (removeCollaborator.isPresent()) {
+			newProjectResult.setRemovedCollaboratorProjectsNumber(removeCollaborator.get());
 		} else {
 			throw new WebApplicationException("Something is wrong.", Status.INTERNAL_SERVER_ERROR);
 		}

@@ -2,24 +2,28 @@ package fr.mickaelbaron.mysharelatexmanager.model;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import jakarta.json.bind.annotation.JsonbNillable;
+import jakarta.json.bind.annotation.JsonbProperty;
 
 /**
  * @author Mickael BARON (baron.mickael@gmail.com)
  */
-@JsonInclude(Include.NON_NULL)
+@JsonbNillable(false)
 public class UserResult extends AbstractResult {
 
 	private List<User> data;
 
+	@JsonbProperty("update_user")
 	private User updatedUser;
 
-	private List<Project> ownerProject;
+	@JsonbProperty("owned_projects")
+	private List<Project> ownedProjects;
 
-	private List<Project> collaberatorsProject;
+	@JsonbProperty("collaborators_project")
+	private List<Project> collaboratorsProject;
 
-	private Long removedCollaberatorProjectsNumber;
+	@JsonbProperty("remove_collaborator_projects_number")
+	private Long removedCollaboratorProjectsNumber;
 
 	public List<User> getData() {
 		return data;
@@ -38,11 +42,11 @@ public class UserResult extends AbstractResult {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((collaberatorsProject == null) ? 0 : collaberatorsProject.hashCode());
+		result = prime * result + ((collaboratorsProject == null) ? 0 : collaboratorsProject.hashCode());
 		result = prime * result + ((data == null) ? 0 : data.hashCode());
-		result = prime * result + ((ownerProject == null) ? 0 : ownerProject.hashCode());
+		result = prime * result + ((ownedProjects == null) ? 0 : ownedProjects.hashCode());
 		result = prime * result
-				+ ((removedCollaberatorProjectsNumber == null) ? 0 : removedCollaberatorProjectsNumber.hashCode());
+				+ ((removedCollaboratorProjectsNumber == null) ? 0 : removedCollaboratorProjectsNumber.hashCode());
 		result = prime * result + ((updatedUser == null) ? 0 : updatedUser.hashCode());
 		return result;
 	}
@@ -56,25 +60,25 @@ public class UserResult extends AbstractResult {
 		if (getClass() != obj.getClass())
 			return false;
 		UserResult other = (UserResult) obj;
-		if (collaberatorsProject == null) {
-			if (other.collaberatorsProject != null)
+		if (collaboratorsProject == null) {
+			if (other.collaboratorsProject != null)
 				return false;
-		} else if (!collaberatorsProject.equals(other.collaberatorsProject))
+		} else if (!collaboratorsProject.equals(other.collaboratorsProject))
 			return false;
 		if (data == null) {
 			if (other.data != null)
 				return false;
 		} else if (!data.equals(other.data))
 			return false;
-		if (ownerProject == null) {
-			if (other.ownerProject != null)
+		if (ownedProjects == null) {
+			if (other.ownedProjects != null)
 				return false;
-		} else if (!ownerProject.equals(other.ownerProject))
+		} else if (!ownedProjects.equals(other.ownedProjects))
 			return false;
-		if (removedCollaberatorProjectsNumber == null) {
-			if (other.removedCollaberatorProjectsNumber != null)
+		if (removedCollaboratorProjectsNumber == null) {
+			if (other.removedCollaboratorProjectsNumber != null)
 				return false;
-		} else if (!removedCollaberatorProjectsNumber.equals(other.removedCollaberatorProjectsNumber))
+		} else if (!removedCollaboratorProjectsNumber.equals(other.removedCollaboratorProjectsNumber))
 			return false;
 		if (updatedUser == null) {
 			if (other.updatedUser != null)
@@ -92,27 +96,27 @@ public class UserResult extends AbstractResult {
 		this.updatedUser = updatedUser;
 	}
 
-	public List<Project> getOwnerProject() {
-		return ownerProject;
+	public List<Project> getOwnedProjects() {
+		return ownedProjects;
 	}
 
-	public void setOwnerProject(List<Project> ownerProject) {
-		this.ownerProject = ownerProject;
+	public void setOwnedProjects(List<Project> ownedProjects) {
+		this.ownedProjects = ownedProjects;
 	}
 
-	public List<Project> getCollaberatorsProject() {
-		return collaberatorsProject;
+	public List<Project> getCollaboratorsProject() {
+		return collaboratorsProject;
 	}
 
-	public void setCollaberatorsProject(List<Project> collaberatorsProject) {
-		this.collaberatorsProject = collaberatorsProject;
+	public void setCollaboratorsProject(List<Project> collaboratorsProject) {
+		this.collaboratorsProject = collaboratorsProject;
 	}
 
-	public Long getRemovedCollaberatorProjectsNumber() {
-		return removedCollaberatorProjectsNumber;
+	public Long getRemovedCollaboratorProjectsNumber() {
+		return removedCollaboratorProjectsNumber;
 	}
 
-	public void setRemovedCollaberatorProjectsNumber(Long removedCollaberatorProjectsNumber) {
-		this.removedCollaberatorProjectsNumber = removedCollaberatorProjectsNumber;
+	public void setRemovedCollaboratorProjectsNumber(Long removedCollaboratorProjectsNumber) {
+		this.removedCollaboratorProjectsNumber = removedCollaboratorProjectsNumber;
 	}
 }

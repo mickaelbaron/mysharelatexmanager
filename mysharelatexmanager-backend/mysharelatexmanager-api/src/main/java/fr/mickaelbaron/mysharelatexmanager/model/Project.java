@@ -3,7 +3,8 @@ package fr.mickaelbaron.mysharelatexmanager.model;
 import java.util.Date;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.json.bind.annotation.JsonbDateFormat;
+import jakarta.json.bind.annotation.JsonbProperty;
 
 /**
  * @author Mickael BARON (baron.mickael@gmail.com)
@@ -12,6 +13,7 @@ public class Project {
 
 	private String id;
 
+	@JsonbProperty("owner_ref")
 	private String ownerId;
 
 	private String owner;
@@ -20,10 +22,13 @@ public class Project {
 
 	private String description;
 
+	@JsonbProperty("active")
 	private Boolean isActive;
 
-	private List<ShortUser> collaberators;
+	private List<ShortUser> collaborators;
 
+	@JsonbDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX")
+	@JsonbProperty("last_updated")
 	private Date lastUpdated;
 
 	public String getId() {
@@ -42,7 +47,6 @@ public class Project {
 		this.name = name;
 	}
 
-	@JsonProperty("owner_ref")
 	public String getOwnerId() {
 		return ownerId;
 	}
@@ -59,7 +63,6 @@ public class Project {
 		this.description = description;
 	}
 
-	@JsonProperty("active")
 	public Boolean isActive() {
 		return isActive;
 	}
@@ -71,7 +74,7 @@ public class Project {
 	@Override
 	public String toString() {
 		return "Project [id=" + id + ", ownerId=" + ownerId + ", owner=" + owner + ", name=" + name + ", description="
-				+ description + ", isActive=" + isActive + ", collaberators=" + collaberators + ", lastUpdated="
+				+ description + ", isActive=" + isActive + ", collaborators=" + collaborators + ", lastUpdated="
 				+ lastUpdated + "]";
 	}
 
@@ -95,7 +98,7 @@ public class Project {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((collaberators == null) ? 0 : collaberators.hashCode());
+		result = prime * result + ((collaborators == null) ? 0 : collaborators.hashCode());
 		result = prime * result + ((description == null) ? 0 : description.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((isActive == null) ? 0 : isActive.hashCode());
@@ -115,10 +118,10 @@ public class Project {
 		if (getClass() != obj.getClass())
 			return false;
 		Project other = (Project) obj;
-		if (collaberators == null) {
-			if (other.collaberators != null)
+		if (collaborators == null) {
+			if (other.collaborators != null)
 				return false;
-		} else if (!collaberators.equals(other.collaberators))
+		} else if (!collaborators.equals(other.collaborators))
 			return false;
 		if (description == null) {
 			if (other.description != null)
@@ -158,11 +161,11 @@ public class Project {
 		return true;
 	}
 
-	public List<ShortUser> getCollaberators() {
-		return collaberators;
+	public List<ShortUser> getCollaborators() {
+		return collaborators;
 	}
 
-	public void setCollaberators(List<ShortUser> collaberators) {
-		this.collaberators = collaberators;
+	public void setCollaborators(List<ShortUser> collaborators) {
+		this.collaborators = collaborators;
 	}
 }

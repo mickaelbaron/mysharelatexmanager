@@ -1,14 +1,14 @@
 server {
     listen 80;
 
-    location /server/ {
-        proxy_pass http://msm-backend:9991/;
+    location @@SUBPATH@@/server/ {
+        proxy_pass http://msm-backend:9080/;
         proxy_http_version 1.1;
         proxy_set_header Connection "";
     }
 
-    location / {
-        rewrite ^(/.*)$ $1 break;
+    location @@SUBPATH@@/ {
+        @@REWRITE@@
         proxy_pass http://msm-frontend;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;

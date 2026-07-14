@@ -6,9 +6,7 @@ services:
     external_links:
       - sharelatex-mongo
     environment: 
-      KUMULUZEE_SERVER_HTTP_PORT: 9991
       mysharelatexmanager.mongodb.url: mongodb://sharelatex-mongodb:27017
-      mysharelatexmanager.server.base: http://0.0.0.0/
     networks:
       - mysharelatexmanagernetwork
       - sharelatexnetwork

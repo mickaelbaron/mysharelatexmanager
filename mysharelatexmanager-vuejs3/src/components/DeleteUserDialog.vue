@@ -7,19 +7,17 @@ const props = defineProps({
   visible: {
     type: Boolean,
     required: true,
-    default: false
   },
   user: {
     type: Object,
     required: true,
-    default: () => ({})
-  }
+  },
 })
 const emit = defineEmits(['update:visible'])
 const errorState = inject('ErrorState')
 
-const ownerProjects = ref([])
-const collaberatorsProjects = ref([])
+const owned_projects = ref([])
+const collaborators_project = ref([])
 
 const modalRef = ref()
 let modal = null
@@ -35,26 +33,23 @@ onMounted(() => {
 watch(
   () => props.visible,
   (visible) => {
+    if (!modal) return
+
     if (visible) {
-      ownerProjects.value = []
-      collaberatorsProjects.value = []
-      confirmEmail.value = ''
       modal.show()
     } else {
       modal.hide()
     }
-  }
+  },
 )
 
 const canDelete = computed(() => {
-  return (
-    ownerProjects.value.length === 0 && collaberatorsProjects.value.length === 0
-  )
+  return owned_projects.value.length === 0 && collaborators_project.value.length === 0
 })
 
 function onSuccessDeleteUser(data) {
-  ownerProjects.value = data.ownerProject
-  collaberatorsProjects.value = data.collaberatorsProject
+  owned_projects.value = data.owned_projects
+  collaborators_project.value = data.collaborators_project
 
   if (canDelete.value) {
     close()
@@ -66,11 +61,7 @@ function onErrorDeleteUser(error) {
 }
 
 function applyDeleteUser() {
-  GlobalService.deleteUser(
-    props.user.id,
-    onSuccessDeleteUser,
-    onErrorDeleteUser
-  )
+  GlobalService.deleteUser(props.user.id, onSuccessDeleteUser, onErrorDeleteUser)
 }
 
 function close() {
@@ -90,64 +81,42 @@ function close() {
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 id="exampleModalLabel" class="modal-title fs-5">
-            Delete User Confirmation
-          </h1>
-          <button
-            type="button"
-            class="btn-close"
-            aria-label="Close"
-            @click="close()"
-          ></button>
+          <h1 id="exampleModalLabel" class="modal-title fs-5">Delete User Confirmation</h1>
+          <button type="button" class="btn-close" aria-label="Close" @click="close()"></button>
         </div>
         <div class="modal-body">
           <div v-if="canDelete">
             <p class="my-4">
-              You are about to <b>delete</b> this user {{ user.email }}, are you
-              absolutely sure?
+              You are about to <b>delete</b> this user {{ user.email }}, are you absolutely sure?
             </p>
             <p class="my-4">Enter the following to confirm: {{ user.email }}</p>
-            <input
-              id="inputInstitution"
-              v-model="confirmEmail"
-              type="text"
-              class="form-control"
-            />
+            <input id="inputInstitution" v-model="confirmEmail" type="text" class="form-control" />
           </div>
           <div v-else>
-            <p class="my-4">
-              Cannot <b>delete</b> {{ user.email }} for these reasons:
-            </p>
+            <p class="my-4">Cannot <b>delete</b> {{ user.email }} for these reasons:</p>
             <div class="alert alert-danger" role="alert">
-              <div v-if="ownerProjects.length !== 0">
+              <div v-if="owned_projects.length !== 0">
                 <p><strong>Owner of</strong></p>
                 <ul>
-                  <li v-for="current in ownerProjects" :key="current.id">
+                  <li v-for="current in owned_projects" :key="current.id">
                     {{ current.name }}
                   </li>
                 </ul>
               </div>
-              <div v-if="collaberatorsProjects.length !== 0">
-                <p><strong>Collaberator of</strong></p>
+              <div v-if="collaborators_project.length !== 0">
+                <p><strong>Collaborator of</strong></p>
                 <ul>
-                  <li
-                    v-for="current in collaberatorsProjects"
-                    :key="current.id"
-                  >
+                  <li v-for="current in collaborators_project" :key="current.id">
                     {{ current.name }}
                   </li>
                 </ul>
               </div>
             </div>
-            <p>
-              You need to fix theses issues before to delete {{ user.email }}.
-            </p>
+            <p>You need to fix theses issues before to delete {{ user.email }}.</p>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" @click="close()">
-            Close
-          </button>
+          <button type="button" class="btn btn-secondary" @click="close()">Close</button>
           <button
             v-show="canDelete"
             type="button"
