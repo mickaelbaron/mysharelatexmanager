@@ -94,25 +94,46 @@ mysharelatexmanager/vuejs      latest              8c5b713e6b83        3 hours a
 
 ## Run MysharelatexManager
 
-### Configure before
+### Configure Docker network
 
 We suppose Sharelatex/Overleaf is deployed by [Docker](https://www.docker.com/) and a Docker network is existing (Docker network is used for communicating between containers).
 
-* Edit the *mysharelatexmanager/docker-compose.yml* file and match the name of Sharelatex network you use (`name: sharelatexnetwork`).
+* Edit the *mysharelatexmanager/compose.yaml* file and match the name of Sharelatex network you use (`name: sharelatexnetwork`).
 
 ```yaml
 ...
 networks:
   mysharelatexmanagernetwork:
+    name: mysharelatexmanagernetwork
   sharelatexnetwork:
-    external:
-      name: sharelatexnetwork
+    name: sharelatexnetwork
+    external: true
 ```
 
-* We suppose that `Sharelatex` network is already existing, create a Docker network for MySharelatexManager called `mysharelatexmanagernetwork`
+### Configure back-end
 
-```bash
-docker network create mysharelatexmanagernetwork
+The back-end includes a set of configuration parameters that can be customized using environment variables. 
+
+* `mysharelatexmanager.mongodb.url`: MongoDB database URL (default value: `mongodb://localhost:27017`)
+* `mysharelatexmanager.identification.user`: name of the single user (default value: `admin`)
+* `mysharelatexmanager.identification.password`: password of the single user (default value: `adminadmin`)
+* `mysharelatexmanager.encrypt.password`: encryption key (default value: `!thisismypassword!`)
+* `mysharelatexmanager.encrypt.noise`: encryption salt/noise (default value: `@BCDEFGHIJKLMNPQRSTUVWXZ&bcdefghijklmnopqrstuvwxyz0123456789`)
+* `mysharelatexmanager.session.timeout`: session renewal timeout
+* `mysharelatexmanager.userfiles.path`: path to the ShareLaTeX `user_files` directory
+
+To modify these values, add the corresponding environment variables to the *compose.yaml* file.
+
+```yaml
+  ...
+  msm-backend:
+    build: mysharelatexmanager-backend/
+    image: mysharelatexmanager/server
+    external_links:
+      - sharelatex-mongo
+    environment: 
+      mysharelatexmanager.mongodb.url: mongodb://sharelatex-mongodb:27017
+  ...
 ```
 
 ### Run
