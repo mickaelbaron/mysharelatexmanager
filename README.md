@@ -160,14 +160,14 @@ docker run --rm --network sharelatexnetwork -v $(pwd)/mongodump:/backup mongo:4.
 
 The result of this extraction will be available into the *mongodump* directory. Copy the *mongodump* directory to your computer.
 
-From your computer (where you want to test MysharelatexManager), create an empty instance of MongoDB database.
+* From your computer (where you want to test MysharelatexManager), create an empty instance of MongoDB database.
 
 ```bash
 docker network create sharelatexnetwork # Optional if this Docker network is existing
 docker run --name sharelatex-mongodb -p 27017:27017 --network sharelatexnetwork -d mongo:4.4.19
 ```
 
-From the *mongodump* directory location, import the content
+* From the *mongodump* directory location, import the content
 
 ```bash
 docker run --rm --network sharelatexnetwork -v $(pwd):/backup mongo:4.4.19 bash -c 'mongorestore /backup --gzip --archive=/backup/sharelatex-dump.gz --noIndexRestore --host sharelatex-mongodb:27017'
