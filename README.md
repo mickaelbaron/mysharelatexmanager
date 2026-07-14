@@ -172,3 +172,9 @@ From the *mongodump* directory location, import the content
 ```bash
 docker run --rm --network sharelatexnetwork -v $(pwd):/backup mongo:4.4.19 bash -c 'mongorestore /backup --gzip --archive=/backup/sharelatex-dump.gz --noIndexRestore --host sharelatex-mongodb:27017'
 ```
+
+## Support My Work
+
+To help ensure the continued development of this project, you can support my work through Buy Me a Coffee.
+
+[![Support on Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Support-orange?style=flat-square\&logo=buy-me-a-coffee)](https://www.buymeacoffee.com/mickaelbaron)
